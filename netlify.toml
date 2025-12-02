@@ -1,0 +1,3 @@
+[build]
+    comman = "npm run build"
+    publis = "build"
