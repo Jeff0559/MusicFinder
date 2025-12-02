@@ -1,0 +1,43 @@
+[
+  {
+    "album": "Views",
+    "artist": "Drake",
+    "rating": 4.0,
+    "source": "Mock",
+    "date": "2016-04-29",
+    "author": "Music Critic",
+    "text": "Polished, moody production with standout hooks. Drake showcases his versatility across a sprawling 20-track album that serves both as showcase and statement."
+  },
+  {
+    "album": "Take Care",
+    "artist": "Drake",
+    "rating": 4.5,
+    "source": "Mock",
+    "date": "2011-11-15",
+    "author": "Staff Review",
+    "text": "Atmospheric and influential, strong feature chemistry. The album marks a shift in Drake's sonic palette and establishes him as a major force in hip-hop."
+  },
+  {
+    "album": "Nothing Was the Same",
+    "artist": "Drake",
+    "rating": 4.2,
+    "source": "Mock",
+    "date": "2013-09-24",
+    "author": "Reviewer",
+    "text": "Drake continues to refine his craft. Introspective lyrics paired with minimalist production create a compelling listening experience."
+  },
+  {
+    "author": "Alex Turner",
+    "rating": 5,
+    "date": "2024-01-15",
+    "source": "Mock",
+    "text": "Outstanding album! The production is immaculate and the compositions are incredibly well thought out."
+  },
+  {
+    "author": "Jordan Smith",
+    "rating": 4,
+    "date": "2024-01-12",
+    "source": "Mock",
+    "text": "A solid piece of work. While not every track hits equally hard, the standout moments are truly memorable."
+  }
+]
