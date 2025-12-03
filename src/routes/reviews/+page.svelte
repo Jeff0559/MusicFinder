@@ -61,7 +61,7 @@
 <div class="container">
 	<section class="reviews-header">
 		<div class="header-content">
-			<h1>⭐ Your Music Reviews</h1>
+			<h1>Your Music Reviews</h1>
 			<p>Track your favorite songs and rate your music discoveries</p>
 			<button class="add-review-btn" onclick={handleAddReview} type="button">
 				+ Add Review
@@ -77,7 +77,7 @@
 
 			{#if reviewedTracks.length === 0}
 				<div class="empty-state">
-					<div class="empty-icon">🎵</div>
+					<div class="empty-icon">*</div>
 					<p>No reviews yet. Start by adding your first review!</p>
 				</div>
 			{:else}
@@ -95,13 +95,13 @@
 						</div>
 
 						<div class="review-notes">
-							<p class="notes-label">💭 Your Notes:</p>
+							<p class="notes-label">Your Notes:</p>
 							<p class="notes-text">{track.notes || 'No notes added'}</p>
 						</div>
 
 						<div class="review-footer">
 							<span class="review-date">
-								📅 {new Date(track.date).toLocaleDateString('de-DE')}
+								Date: {new Date(track.date).toLocaleDateString('de-DE')}
 							</span>
 							<div class="review-actions">
 								<button
@@ -109,7 +109,7 @@
 									type="button"
 									title="Edit review"
 								>
-									✏️ Edit
+									Edit
 								</button>
 									<button
 										class="action-btn delete-btn"
@@ -117,7 +117,7 @@
 										type="button"
 										title="Delete review"
 									>
-										🗑️ Delete
+										Delete
 									</button>
 							</div>
 						</div>
@@ -128,7 +128,7 @@
 
 		<aside class="albums-sidebar">
 			<div class="sidebar-header">
-				<h2>📀 Albums</h2>
+				<h2>Albums</h2>
 			</div>
 
 			<div class="albums-grid">
@@ -165,7 +165,7 @@
 				<div class="modal-header">
 					<h2>Add New Review</h2>
 					<button class="close-btn" onclick={handleCloseReview} type="button">
-						✕
+						x
 					</button>
 				</div>
 				<form class="review-form">
