@@ -1,7 +1,3 @@
-console.log("ID =", SPOTIFY_CLIENT_ID);
-console.log("SECRET =", SPOTIFY_CLIENT_SECRET ? "OK" : "MISSING");
-
-
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from '$env/static/private';
 
 let cachedToken: string | null = null;
@@ -13,7 +9,7 @@ async function getAccessToken(): Promise<string> {
 	}
 
 	const credentials = `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`;
-	const auth = btoa(credentials);
+	const auth = Buffer.from(credentials, 'utf-8').toString('base64');
 
 	const response = await fetch('https://accounts.spotify.com/api/token', {
 		method: 'POST',
