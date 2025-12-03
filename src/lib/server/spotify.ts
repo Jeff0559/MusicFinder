@@ -1,4 +1,4 @@
-import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 let cachedToken: string | null = null;
 let tokenExpiry = 0;
@@ -8,7 +8,14 @@ async function getAccessToken(): Promise<string> {
 		return cachedToken;
 	}
 
-	const credentials = `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`;
+	const clientId = env.SPOTIFY_CLIENT_ID;
+	const clientSecret = env.SPOTIFY_CLIENT_SECRET;
+
+	if (!clientId || !clientSecret) {
+		throw new Error('Missing SPOTIFY_CLIENT_ID/SPOTIFY_CLIENT_SECRET environment variables');
+	}
+
+	const credentials = `${clientId}:${clientSecret}`;
 	const auth = Buffer.from(credentials, 'utf-8').toString('base64');
 
 	const response = await fetch('https://accounts.spotify.com/api/token', {
