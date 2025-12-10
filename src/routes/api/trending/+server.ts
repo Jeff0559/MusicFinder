@@ -33,6 +33,7 @@ export async function GET() {
 		});
 	} catch (error) {
 		console.error('Trending API error:', error);
-		return json({ error: 'Failed to fetch trending', albums: [], artists: [], featured: [] }, { status: 500 });
+		// Return a 200 with empty lists so the UI renders without breaking if Spotify is down/misconfigured
+		return json({ albums: [], artists: [], featured: [], error: 'Failed to fetch trending' });
 	}
 }

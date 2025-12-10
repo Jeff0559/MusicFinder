@@ -1,42 +1,93 @@
 <script lang="ts">
-  import { recent } from '$lib/stores/recent';
+  import { onDestroy, onMount } from 'svelte';
   import TrendingBlock from './TrendingBlock.svelte';
   import VinylCarousel from '$lib/components/VinylCarousel.svelte';
-  import { onDestroy, onMount } from 'svelte';
+  import { recent } from '$lib/stores/recent';
 
   let query = '';
   let type: 'track' | 'album' | 'artist' = 'track';
+  let searchResults: any[] = [];
+  let searchLoading = false;
+  let searchError = '';
 
   let recentTerms: string[] = [];
   let trendingAlbums: any[] = [];
   let trendingArtists: any[] = [];
   let vinylItems: { label: string; image: string }[] = [];
 
-  // Speicherung der Suchhistorie
+  const getImage = (item: any) =>
+    item?.images?.[0]?.url
+    ?? item?.album?.images?.[0]?.url
+    ?? item?.artists?.[0]?.images?.[0]?.url
+    ?? '';
+
+  const getTitle = (item: any) =>
+    item?.name
+    ?? item?.album?.name
+    ?? item?.track?.name
+    ?? '';
+
+  const getSubtitle = (item: any) => {
+    if (type === 'track') {
+      const artist = item?.artists?.[0]?.name ?? '';
+      const album = item?.album?.name ?? '';
+      return [artist, album].filter(Boolean).join(' / ');
+    }
+    if (type === 'album') {
+      const artist = item?.artists?.[0]?.name ?? '';
+      const year = item?.release_date?.slice?.(0, 4) ?? '';
+      return [artist, year].filter(Boolean).join(' / ');
+    }
+    const followers = item?.followers?.total?.toLocaleString?.() ?? '';
+    const pop = item?.popularity ?? '';
+    return [followers ? `${followers} Follower` : '', pop ? `Popularity ${pop}` : ''].filter(Boolean).join(' / ');
+  };
+
   const unsub = recent.subscribe(v => (recentTerms = v));
   onDestroy(() => unsub());
 
-  // Suche starten
-  function goSearch() {
+  async function goSearch(addRecent = false) {
     if (!query.trim()) return;
+    searchLoading = true;
+    searchError = '';
+    searchResults = [];
+
     const params = new URLSearchParams({ q: query, type });
-    window.location.href = `/search?${params.toString()}`;
+    try {
+      const resp = await fetch(`/api/search?${params.toString()}`);
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new Error(txt || 'Search failed');
+      }
+      const data = await resp.json();
+      const list =
+        Array.isArray(data)
+          ? data
+          : data?.tracks?.items
+            ?? data?.albums?.items
+            ?? data?.artists?.items
+            ?? [];
+      searchResults = list;
+      if (addRecent) recent.add(query);
+    } catch (e) {
+      console.error('Home search failed', e);
+      searchError = 'Suche fehlgeschlagen. Bitte erneut versuchen.';
+    } finally {
+      searchLoading = false;
+    }
   }
 
-  // Letzte Suchbegriffe anklicken
   function useTerm(term: string) {
     query = term;
-    goSearch();
+    goSearch(true);
   }
 
-  // Trending von API laden
   onMount(async () => {
     try {
       const resp = await fetch('/api/trending');
       const data = await resp.json();
       trendingAlbums = data.albums ?? [];
       trendingArtists = data.artists ?? [];
-      // load vinyl images after trending data available
       loadVinylImages();
     } catch (e) {
       console.error('Trending failed:', e);
@@ -57,9 +108,9 @@
   }
 </script>
 
-<!-- 🔝 Top Bar -->
+<!-- dY"? Top Bar -->
 <header class="topbar">
-  <div class="brand">🎵 MusicFinder</div>
+  <div class="brand">dYZæ MusicFinder</div>
   <nav class="nav">
     <a href="/" aria-current="page">Home</a>
     <a href="/search">Search</a>
@@ -67,21 +118,23 @@
   </nav>
 </header>
 
-<!-- ⭐ HERO: Vinyl Record Store -->
+<!-- ƒ-? HERO: Vinyl Record Store -->
 <section class="hero">
   <div class="hero-inner">
     <h1 class="title">Finde deinen Sound</h1>
-    <p class="subtitle">Willkommen im digitalen Plattenladen – entdecke Musik wie ein Vinyl-Sampler.</p>
+    <p class="subtitle">Willkommen im digitalen Plattenladen ƒ?" entdecke Musik wie ein Vinyl-Sampler.</p>
 
     <div class="search-area">
       <!-- Suchbox -->
       <div class="searchbox">
         <input
           bind:value={query}
-          placeholder="Suche nach Song, Artist oder Album…"
-          onkeydown={(e)=> e.key === 'Enter' && goSearch()}
+          placeholder="Suche nach Song, Artist oder Albumƒ?Ý"
+          onkeydown={(e)=> e.key === 'Enter' && goSearch(true)}
         />
-        <button class="search-btn" onclick={goSearch}>Search</button>
+        <button class="search-btn" onclick={() => goSearch(false)} disabled={searchLoading}>
+          {searchLoading ? 'Searching...' : 'Search'}
+        </button>
       </div>
 
       <!-- Tabs -->
@@ -91,17 +144,17 @@
         <label><input bind:group={type} value="artist" type="radio" /> Artists</label>
       </div>
 
-      <!-- 🎧 Vinyl Carousel (component) -->
-      <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(); }} />
+      <!-- dYZ Vinyl Carousel (component) -->
+      <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(true); }} />
     </div>
   </div>
 </section>
 
-<!-- 🔥 TRENDING SECTIONS -->
+<!-- dY" TRENDING SECTIONS -->
 <main class="container">
 
   <TrendingBlock
-    title="🎵 Trending Albums"
+    title="dYZæ Trending Albums"
     items={trendingAlbums.map(a => ({
       image: a.images?.[0]?.url ?? '',
       name: a.name,
@@ -110,7 +163,7 @@
   />
 
   <TrendingBlock
-    title="🎤 Popular Artists"
+    title="dYZ Popular Artists"
     items={trendingArtists.map(a => ({
       image: a.images?.[0]?.url ?? '',
       name: a.name,
@@ -118,130 +171,289 @@
     }))}
   />
 
-  <!-- 🏷 Genres → Direkt anklickbar -->
+  <!-- dY?ú Genres ƒ+' Direkt anklickbar -->
   <section class="grid">
     {#each ['Pop','Chill','Focus','Workout','Party','EDM','Jazz','Rock','Piano','Sleep','Roadtrip','Gaming'] as g}
       <button class="tile" onclick={() => useTerm(g)}>{g}</button>
     {/each}
   </section>
 
+  <section class="home-results">
+    <div class="results-header">
+      <h2>Suchergebnisse</h2>
+      {#if searchResults.length} <span class="count">{searchResults.length}</span> {/if}
+    </div>
+    {#if searchError}
+      <p class="muted">{searchError}</p>
+    {:else if (!searchResults.length && !searchLoading)}
+      <p class="muted">Starte eine Suche, um Ergebnisse hier zu sehen.</p>
+    {:else}
+      {#if searchLoading}
+        <p class="muted">Lade...</p>
+      {/if}
+      <div class="grid results-grid">
+        {#each searchResults as item (item.id ?? item.uri ?? item.name)}
+          <article class="card">
+            {#if getImage(item)}
+              <img src={getImage(item)} alt={getTitle(item)} loading="lazy" />
+            {:else}
+              <div class="placeholder">No Image</div>
+            {/if}
+            <h3>{getTitle(item)}</h3>
+            {#if getSubtitle(item)}
+              <p class="subtitle">{getSubtitle(item)}</p>
+            {/if}
+            <a class="open-link" href={`/search?q=${encodeURIComponent(query)}&type=${type}`}>Details</a>
+          </article>
+        {/each}
+      </div>
+    {/if}
+  </section>
+
 </main>
 
 <style>
+  :global(:root) {
+    --bg-main: #141414;
+    --bg-panel: #1E1E1E;
+    --bg-surface: #2C2C2C;
+    --accent-primary: #00E676;
+    --accent-secondary: #FFA726;
+    --accent-info: #42A5F5;
+    --text-primary: #FFFFFF;
+    --text-secondary: #BDBDBD;
+    --text-muted: #757575;
+    --space-xs: 4px;
+    --space-s: 8px;
+    --space-m: 16px;
+    --space-l: 24px;
+    --space-xl: 32px;
+    --radius-s: 12px;
+    --radius-m: 16px;
+    --radius-pill: 24px;
+  }
+
   :global(body){
     margin:0;
     font-family: system-ui, Inter, sans-serif;
-    background:#0B0D12;
-    color:#E8ECF2;
+    background: var(--bg-main);
+    color: var(--text-primary);
   }
 
-  /* 🔝 Topbar */
   .topbar{
     position:sticky;
     top:0;
     display:flex;
     justify-content:space-between;
-    padding:14px 18px;
-    background:rgba(11,13,18,.85);
-    backdrop-filter: blur(6px);
-    border-bottom:1px solid #2a2f36;
+    padding:var(--space-m) var(--space-l);
+    background: rgba(20,20,20,0.9);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--bg-surface);
     z-index:20;
   }
   .nav a{
-    color:#9fb0c6;
-    margin-left:16px;
+    color:var(--text-secondary);
+    margin-left:var(--space-m);
     text-decoration:none;
+    padding:var(--space-s) var(--space-m);
+    border-radius: var(--radius-pill);
+    transition: color 120ms ease, background 120ms ease;
   }
-  .nav a[aria-current="page"]{ color:#fff; }
+  .nav a[aria-current="page"]{
+    color:var(--bg-main);
+    background: var(--accent-primary);
+  }
+  .nav a:hover{ color:var(--accent-primary); }
 
-  /* ⭐ HERO SECTION */
   .hero{
     width:100%;
-    padding:60px 0 50px;
-    background:radial-gradient(circle at 20% 20%, #2d2d2d, #111);
-    border-bottom:1px solid #333;
-    margin-bottom:40px;
+    padding:var(--space-xl) 0 var(--space-l);
+    background: linear-gradient(135deg, rgba(66,165,245,0.06), rgba(0,230,118,0.05));
+    border-bottom:1px solid var(--bg-surface);
+    margin-bottom:var(--space-l);
   }
   .hero-inner{
-    max-width:900px;
+    max-width:960px;
     margin:auto;
     text-align:center;
   }
   .title{
-    font-size:2.7rem;
-    font-weight:700;
+    font-size:32px;
+    font-weight:800;
+    margin:0 0 var(--space-s) 0;
   }
   .subtitle{
-    color:#c7c7c7;
-    margin-bottom:30px;
+    color:var(--text-secondary);
+    margin:0 0 var(--space-l) 0;
   }
 
-  /* 🔍 Suche */
   .search-area{
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:20px;
+    gap:var(--space-m);
   }
   .searchbox{
     display:flex;
     width:100%;
-    max-width:640px;
-    background:#1f1f1f;
-    padding:10px;
-    border-radius:14px;
-    border:1px solid #333;
-    box-shadow:0 0 16px rgba(0,0,0,0.4);
+    max-width:720px;
+    background: var(--bg-panel);
+    padding:var(--space-s);
+    border-radius: var(--radius-m);
+    border:1px solid var(--bg-surface);
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
   }
   .searchbox input{
     flex:1;
     background:transparent;
     border:none;
-    color:#eee;
-    font-size:1.1rem;
+    color:var(--text-primary);
+    font-size:16px;
     outline:none;
+    padding: var(--space-s);
   }
   .search-btn{
-    background:#3df77c;
-    padding:10px 20px;
+    background: var(--accent-primary);
+    color: var(--bg-main);
+    padding: var(--space-s) var(--space-l);
     border:none;
-    border-radius:10px;
-    font-weight:600;
+    border-radius: var(--radius-s);
+    font-weight:700;
     cursor:pointer;
+    min-width: 120px;
+  }
+  .search-btn:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
   }
 
-  /* Tabs */
   .tabs{
     display:flex;
-    gap:20px;
-    color:#ddd;
+    gap:var(--space-s);
+    color:var(--text-secondary);
+    flex-wrap:wrap;
   }
   .tabs label{
     cursor:pointer;
+    padding: var(--space-s) var(--space-m);
+    border-radius: var(--radius-pill);
+    border:1px solid var(--bg-surface);
+    background: rgba(255,255,255,0.03);
   }
 
-  /* Vinyl carousel styling moved into `VinylCarousel.svelte` component */
-
-  /* 📦 Container */
   .container{
-    max-width:1040px;
+    max-width:1100px;
     margin:auto;
-    padding:16px;
+    padding:var(--space-m);
+    display:flex;
+    flex-direction:column;
+    gap:var(--space-l);
   }
 
-  /* Genre Tiles */
   .grid{
     display:grid;
-    gap:12px;
+    gap:var(--space-m);
     grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
-    margin-top:20px;
   }
   .tile{
-    background:#1e232a;
-    border:1px solid #2a2f36;
-    border-radius:12px;
-    padding:14px 10px;
+    background:var(--bg-panel);
+    border:1px solid var(--bg-surface);
+    border-radius:var(--radius-s);
+    padding:var(--space-m);
     font-size:15px;
     cursor:pointer;
+    color:var(--text-primary);
+    transition: background 120ms ease, transform 120ms ease;
+  }
+  .tile:hover{
+    background: var(--bg-surface);
+    transform: translateY(-2px);
+  }
+
+  .home-results{
+    background:var(--bg-panel);
+    border:1px solid var(--bg-surface);
+    border-radius:var(--radius-m);
+    padding:var(--space-m);
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  .results-header{
+    display:flex;
+    align-items:center;
+    gap:var(--space-s);
+    margin-bottom:var(--space-s);
+  }
+
+  .results-header h2{
+    margin:0;
+    font-size:20px;
+  }
+
+  .count{
+    background:var(--bg-surface);
+    border:1px solid var(--bg-surface);
+    padding:4px 10px;
+    border-radius:var(--radius-pill);
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+
+  .results-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+    gap:var(--space-m);
+  }
+  .results-grid .card{
+    background:var(--bg-surface);
+    border:1px solid var(--bg-panel);
+    border-radius:var(--radius-m);
+    padding:var(--space-m);
+    display:flex;
+    flex-direction:column;
+    gap:var(--space-s);
+    min-height:260px;
+  }
+
+  .results-grid img,
+  .results-grid .placeholder{
+    width:100%;
+    height:140px;
+    border-radius:var(--radius-s);
+    object-fit:cover;
+    background:var(--bg-panel);
+  }
+
+  .placeholder{
+    display:grid;
+    place-items:center;
+    color:var(--text-muted);
+    border:1px dashed var(--bg-panel);
+  }
+
+  .subtitle{
+    margin:0;
+    font-size:14px;
+    color:var(--text-secondary);
+  }
+
+  .open-link{
+    color:var(--accent-info);
+    font-weight:700;
+    text-decoration:none;
+  }
+  .open-link:hover{ color: var(--accent-secondary); }
+
+  @media (max-width: 720px) {
+    .searchbox{
+      flex-direction:column;
+      gap:var(--space-s);
+    }
+    .search-btn{
+      width:100%;
+    }
+    .nav a{
+      margin-left:var(--space-s);
+    }
   }
 </style>
