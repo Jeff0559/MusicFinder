@@ -1,44 +1,71 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import AlbumCard from '$lib/components/AlbumCard.svelte';
 	import RatingStars from '$lib/components/RatingStars.svelte';
 	import type { SpotifyAlbum } from '$lib/types';
 
-	let reviewedTracks: Array<{
+	type StoredReview = {
 		id: string;
-		name: string;
+		trackName: string;
 		artist: string;
-		album: SpotifyAlbum;
+		album: string;
 		rating: number;
 		notes: string;
-		date: string;
-	}> = [
-		{
-			id: '1',
-			name: 'Blinding Lights',
-			artist: 'The Weeknd',
-			album: {
-				id: 'album1',
-				name: 'After Hours',
-				release_date: '2020-03-20',
-				total_tracks: 14,
-				images: [
-					{
-						url: 'https://via.placeholder.com/300',
-						height: 300,
-						width: 300
-					}
-				],
-				uri: ''
-			},
-			rating: 4.5,
-			notes: 'Amazing production and catchy melody',
-			date: '2025-11-10'
-		}
-	];
+		createdAt: string;
+	};
 
-	let selectedAlbum: SpotifyAlbum | null = null;
+	const albumFromReview = (review: StoredReview): SpotifyAlbum => ({
+		id: review.id,
+		name: review.album,
+		artists: [{ id: review.id, name: review.artist }],
+		images: []
+	});
+
+	let reviewedTracks: StoredReview[] = [];
+	let selectedAlbum: StoredReview | null = null;
 	let showAddReview = false;
-	let newReviewNotes = '';
+
+	let newReview: {
+		trackName: string;
+		artist: string;
+		album: string;
+		rating: number;
+		notes: string;
+	} = {
+		trackName: '',
+		artist: '',
+		album: '',
+		rating: 4,
+		notes: ''
+	};
+
+	let loading = false;
+	let saving = false;
+	let deletingId: string | null = null;
+	let error = '';
+
+	onMount(() => {
+		loadReviews();
+	});
+
+	async function loadReviews() {
+		loading = true;
+		error = '';
+		try {
+			const resp = await fetch('/api/user-reviews');
+			if (!resp.ok) {
+				throw new Error(await resp.text());
+			}
+			const data = await resp.json();
+			reviewedTracks = Array.isArray(data.reviews) ? data.reviews : [];
+			selectedAlbum = reviewedTracks[0] ?? null;
+		} catch (err) {
+			console.error('loadReviews failed', err);
+			error = 'Konnte Reviews nicht laden.';
+		} finally {
+			loading = false;
+		}
+	}
 
 	function handleAddReview() {
 		showAddReview = true;
@@ -46,15 +73,83 @@
 
 	function handleCloseReview() {
 		showAddReview = false;
-		newReviewNotes = '';
+		resetForm();
 	}
 
-	function handleViewAlbum(album: SpotifyAlbum) {
-		selectedAlbum = album;
+	function resetForm() {
+		newReview = {
+			trackName: '',
+			artist: '',
+			album: '',
+			rating: 4,
+			notes: ''
+		};
 	}
 
-	function handleDeleteReview(id: string) {
-		reviewedTracks = reviewedTracks.filter(t => t.id !== id);
+	function handleViewAlbum(review: StoredReview) {
+		selectedAlbum = review;
+	}
+
+	async function submitReview(event: Event) {
+		event.preventDefault();
+		if (saving) return;
+
+		if (!newReview.trackName.trim() || !newReview.artist.trim() || !newReview.album.trim()) {
+			error = 'Bitte Track, Artist und Album ausfüllen.';
+			return;
+		}
+
+		saving = true;
+		error = '';
+
+		try {
+			const resp = await fetch('/api/user-reviews', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(newReview)
+			});
+
+			if (!resp.ok) {
+				const text = await resp.text();
+				throw new Error(text || 'Speichern fehlgeschlagen');
+			}
+
+			const data = await resp.json();
+			if (data?.review) {
+				reviewedTracks = [data.review, ...reviewedTracks];
+				selectedAlbum = data.review;
+			}
+			handleCloseReview();
+		} catch (err) {
+			console.error('submitReview failed', err);
+			error = 'Review konnte nicht gespeichert werden.';
+		} finally {
+			saving = false;
+		}
+	}
+
+	async function handleDeleteReview(id: string) {
+		if (deletingId) return;
+		deletingId = id;
+		error = '';
+
+		try {
+			const resp = await fetch(`/api/user-reviews?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+			if (!resp.ok) {
+				const text = await resp.text();
+				throw new Error(text || 'Delete failed');
+			}
+
+			reviewedTracks = reviewedTracks.filter((t) => t.id !== id);
+			if (selectedAlbum?.id === id) {
+				selectedAlbum = null;
+			}
+		} catch (err) {
+			console.error('deleteReview failed', err);
+			error = 'Review konnte nicht gelöscht werden.';
+		} finally {
+			deletingId = null;
+		}
 	}
 </script>
 
@@ -69,13 +164,19 @@
 		</div>
 	</section>
 
+	{#if error}
+		<div class="error-banner">{error}</div>
+	{/if}
+
 	<div class="reviews-container">
 		<main class="reviews-list">
 			<div class="list-header">
 				<h2>Reviewed Tracks ({reviewedTracks.length})</h2>
 			</div>
 
-			{#if reviewedTracks.length === 0}
+			{#if loading}
+				<div class="loading">Lade gespeicherte Reviews...</div>
+			{:else if reviewedTracks.length === 0}
 				<div class="empty-state">
 					<div class="empty-icon">*</div>
 					<p>No reviews yet. Start by adding your first review!</p>
@@ -85,9 +186,9 @@
 					<div class="review-card">
 						<div class="review-header">
 							<div class="review-info">
-								<h3>{track.name}</h3>
+								<h3>{track.trackName}</h3>
 								<p class="artist">{track.artist}</p>
-								<p class="album-name">from <strong>{track.album.name}</strong></p>
+								<p class="album-name">from <strong>{track.album}</strong></p>
 							</div>
 							<div class="review-rating">
 								<RatingStars rating={track.rating} />
@@ -101,7 +202,7 @@
 
 						<div class="review-footer">
 							<span class="review-date">
-								Date: {new Date(track.date).toLocaleDateString('de-DE')}
+								Date: {new Date(track.createdAt).toLocaleDateString('de-DE')}
 							</span>
 							<div class="review-actions">
 								<button
@@ -114,10 +215,11 @@
 									<button
 										class="action-btn delete-btn"
 										onclick={() => handleDeleteReview(track.id)}
+										disabled={deletingId === track.id}
 										type="button"
 										title="Delete review"
 									>
-										Delete
+										{deletingId === track.id ? 'Deleting...' : 'Delete'}
 									</button>
 							</div>
 						</div>
@@ -132,27 +234,27 @@
 			</div>
 
 			<div class="albums-grid">
-				{#each reviewedTracks as track (track.id)}
-					<AlbumCard
-						album={track.album}
-						onViewDetails={() => handleViewAlbum(track.album)}
-					/>
-				{/each}
+				{#if reviewedTracks.length === 0}
+					<p class="muted">Noch keine Alben gespeichert.</p>
+				{:else}
+					{#each reviewedTracks as track (track.id)}
+						<AlbumCard
+							album={albumFromReview(track)}
+							onViewDetails={() => handleViewAlbum(track)}
+						/>
+					{/each}
+				{/if}
 			</div>
 
 			{#if selectedAlbum}
 				<div class="album-detail">
-					<h3>Album Details</h3>
+					<h3>Review Details</h3>
 					<div class="album-info">
-						<p><strong>Name:</strong> {selectedAlbum.name}</p>
-						<p>
-							<strong>Release Date:</strong>
-							{new Date(selectedAlbum.release_date!).toLocaleDateString('de-DE', {
-								year: 'numeric',
-								month: 'long'
-							})}
-						</p>
-						<p><strong>Tracks:</strong> {selectedAlbum.total_tracks}</p>
+						<p><strong>Track:</strong> {selectedAlbum.trackName}</p>
+						<p><strong>Artist:</strong> {selectedAlbum.artist}</p>
+						<p><strong>Album:</strong> {selectedAlbum.album}</p>
+						<p><strong>Bewertung:</strong> {selectedAlbum.rating.toFixed(1)} / 5</p>
+						<p><strong>Hinzugefuegt:</strong> {new Date(selectedAlbum.createdAt).toLocaleDateString('de-DE')}</p>
 					</div>
 				</div>
 			{/if}
@@ -168,12 +270,14 @@
 						x
 					</button>
 				</div>
-				<form class="review-form">
+				<form class="review-form" on:submit|preventDefault={submitReview}>
 					<div class="form-group">
 						<label for="track-name">Track Name</label>
 						<input
 							id="track-name"
 							type="text"
+							bind:value={newReview.trackName}
+							required
 							placeholder="Enter track name..."
 						/>
 					</div>
@@ -182,24 +286,26 @@
 						<input
 							id="artist-name"
 							type="text"
+							bind:value={newReview.artist}
+							required
 							placeholder="Enter artist name..."
 						/>
 					</div>
 					<div class="form-group">
 						<label for="album-name">Album</label>
-						<input id="album-name" type="text" placeholder="Enter album name..." />
+						<input id="album-name" type="text" bind:value={newReview.album} required placeholder="Enter album name..." />
 					</div>
 					<div class="form-group">
 						<label for="rating-input">Rating</label>
 						<div class="rating-input">
-							<RatingStars rating={5} interactive={true} />
+							<RatingStars bind:rating={newReview.rating} interactive={true} />
 						</div>
 					</div>
 					<div class="form-group">
 						<label for="notes">Your Notes</label>
 						<textarea
 							id="notes"
-							bind:value={newReviewNotes}
+							bind:value={newReview.notes}
 							placeholder="Write your thoughts about this track..."
 							rows="4"
 						></textarea>
@@ -208,8 +314,8 @@
 						<button class="btn btn-secondary" onclick={handleCloseReview} type="button">
 							Cancel
 						</button>
-						<button class="btn btn-primary" type="submit">
-							Save Review
+						<button class="btn btn-primary" type="submit" disabled={saving}>
+							{saving ? 'Saving...' : 'Save Review'}
 						</button>
 					</div>
 				</form>
@@ -304,6 +410,21 @@
 		color: var(--color-primary);
 	}
 
+	.error-banner {
+		margin: var(--space-12) 0;
+		padding: var(--space-12) var(--space-16);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-error);
+		background: rgba(255, 107, 107, 0.12);
+		color: var(--color-text-primary);
+	}
+
+	.loading {
+		padding: var(--space-32);
+		text-align: center;
+		color: var(--color-text-secondary);
+	}
+
 	.empty-state {
 		text-align: center;
 		padding: var(--space-48);
@@ -332,6 +453,11 @@
 		margin: 0;
 		font-size: var(--font-size-lg);
 		color: var(--color-text-secondary);
+	}
+
+	.muted {
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-sm);
 	}
 
 	.review-card {
@@ -683,3 +809,5 @@
 		}
 	}
 </style>
+
+

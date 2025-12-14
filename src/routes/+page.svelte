@@ -152,64 +152,70 @@
 
 <!-- dY" TRENDING SECTIONS -->
 <main class="container">
+  <div class="discover-section">
 
-  <TrendingBlock
-    title="dYZæ Trending Albums"
-    items={trendingAlbums.map(a => ({
-      image: a.images?.[0]?.url ?? '',
-      name: a.name,
-      meta: a.artists?.[0]?.name ?? ''
-    }))}
-  />
-
-  <TrendingBlock
-    title="dYZ Popular Artists"
-    items={trendingArtists.map(a => ({
-      image: a.images?.[0]?.url ?? '',
-      name: a.name,
-      meta: a.genres?.[0] ?? ''
-    }))}
-  />
-
-  <!-- dY?ú Genres ƒ+' Direkt anklickbar -->
-  <section class="grid">
-    {#each ['Pop','Chill','Focus','Workout','Party','EDM','Jazz','Rock','Piano','Sleep','Roadtrip','Gaming'] as g}
-      <button class="tile" onclick={() => useTerm(g)}>{g}</button>
-    {/each}
-  </section>
-
-  <section class="home-results">
-    <div class="results-header">
-      <h2>Suchergebnisse</h2>
-      {#if searchResults.length} <span class="count">{searchResults.length}</span> {/if}
+    <div class="trending-section">
+      <TrendingBlock
+        title="dYZæ Trending Albums"
+        items={trendingAlbums.map(a => ({
+          image: a.images?.[0]?.url ?? '',
+          name: a.name,
+          meta: a.artists?.[0]?.name ?? ''
+        }))}
+      />
     </div>
-    {#if searchError}
-      <p class="muted">{searchError}</p>
-    {:else if (!searchResults.length && !searchLoading)}
-      <p class="muted">Starte eine Suche, um Ergebnisse hier zu sehen.</p>
-    {:else}
-      {#if searchLoading}
-        <p class="muted">Lade...</p>
-      {/if}
-      <div class="grid results-grid">
-        {#each searchResults as item (item.id ?? item.uri ?? item.name)}
-          <article class="card">
-            {#if getImage(item)}
-              <img src={getImage(item)} alt={getTitle(item)} loading="lazy" />
-            {:else}
-              <div class="placeholder">No Image</div>
-            {/if}
-            <h3>{getTitle(item)}</h3>
-            {#if getSubtitle(item)}
-              <p class="subtitle">{getSubtitle(item)}</p>
-            {/if}
-            <a class="open-link" href={`/search?q=${encodeURIComponent(query)}&type=${type}`}>Details</a>
-          </article>
-        {/each}
-      </div>
-    {/if}
-  </section>
 
+    <div class="trending-section">
+      <TrendingBlock
+        title="dYZ Popular Artists"
+        items={trendingArtists.map(a => ({
+          image: a.images?.[0]?.url ?? '',
+          name: a.name,
+          meta: a.genres?.[0] ?? ''
+        }))}
+      />
+    </div>
+
+    <!-- dY?ú Genres ƒ+' Direkt anklickbar -->
+    <section class="mood-tags">
+      {#each ['Pop','Chill','Focus','Workout','Party','EDM','Jazz','Rock','Piano','Sleep','Roadtrip','Gaming'] as g}
+        <button class="mood-tag" onclick={() => useTerm(g)}>{g}</button>
+      {/each}
+    </section>
+
+    <section class="search-results">
+      <div class="results-header">
+        <h2>Suchergebnisse</h2>
+        {#if searchResults.length} <span class="count">{searchResults.length}</span> {/if}
+      </div>
+      {#if searchError}
+        <p class="muted">{searchError}</p>
+      {:else if (!searchResults.length && !searchLoading)}
+        <p class="muted">Starte eine Suche, um Ergebnisse hier zu sehen.</p>
+      {:else}
+        {#if searchLoading}
+          <p class="muted">Lade...</p>
+        {/if}
+        <div class="grid results-grid">
+          {#each searchResults as item (item.id ?? item.uri ?? item.name)}
+            <article class="card">
+              {#if getImage(item)}
+                <img src={getImage(item)} alt={getTitle(item)} loading="lazy" />
+              {:else}
+                <div class="placeholder">No Image</div>
+              {/if}
+              <h3>{getTitle(item)}</h3>
+              {#if getSubtitle(item)}
+                <p class="subtitle">{getSubtitle(item)}</p>
+              {/if}
+              <a class="open-link" href={`/search?q=${encodeURIComponent(query)}&type=${type}`}>Details</a>
+            </article>
+          {/each}
+        </div>
+      {/if}
+    </section>
+
+  </div>
 </main>
 
 <style>
@@ -342,12 +348,29 @@
   }
 
   .container{
-    max-width:1100px;
-    margin:auto;
+    width:100%;
     padding:var(--space-m);
     display:flex;
     flex-direction:column;
+    align-items:center;
     gap:var(--space-l);
+  }
+
+  .discover-section{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    width:100%;
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 20px;
+  }
+
+  .trending-section{
+    background:var(--bg-panel);
+    padding:16px 20px;
+    border-radius:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.25);
   }
 
   .grid{
@@ -355,26 +378,33 @@
     gap:var(--space-m);
     grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
   }
-  .tile{
-    background:var(--bg-panel);
-    border:1px solid var(--bg-surface);
-    border-radius:var(--radius-s);
-    padding:var(--space-m);
-    font-size:15px;
-    cursor:pointer;
-    color:var(--text-primary);
-    transition: background 120ms ease, transform 120ms ease;
-  }
-  .tile:hover{
-    background: var(--bg-surface);
-    transform: translateY(-2px);
+  .mood-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:4px;
   }
 
-  .home-results{
-    background:var(--bg-panel);
-    border:1px solid var(--bg-surface);
-    border-radius:var(--radius-m);
-    padding:var(--space-m);
+  .mood-tag{
+    background:var(--bg-surface);
+    padding:10px 18px;
+    border-radius:24px;
+    color:var(--text-secondary);
+    cursor:pointer;
+    border:none;
+    transition:0.2s;
+  }
+
+  .mood-tag:hover{
+    background:var(--accent-info);
+    color:black;
+  }
+
+  .search-results{
+    background:var(--bg-surface);
+    padding:20px;
+    border-radius:16px;
+    margin-top:12px;
     box-shadow:0 10px 30px rgba(0,0,0,0.35);
   }
 
