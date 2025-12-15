@@ -32,6 +32,10 @@
   let autoScore = $state(false);
   let lastAutoScoreId: string | null = $state(null);
   let initializedFromUrl = $state(false);
+  let albumTracks: any[] = $state([]);
+  let albumTracksLoading = $state(false);
+  let albumTracksError = $state('');
+  let selectedAlbumTitle = $state('');
 
   const heroTrack = $derived(results?.[0] ?? null);
   const heroImage = $derived(heroTrack ? getImage(heroTrack) : '');
@@ -85,6 +89,9 @@
     stopYouTube();
     vibeMatches = [];
     lastScore = null;
+    albumTracks = [];
+    albumTracksError = '';
+    selectedAlbumTitle = '';
   }
 
   $effect(() => {
@@ -367,6 +374,34 @@
     youtubeTitle = '';
   }
 
+  function handlePlaylistClick(title: string) {
+    searchType = 'track';
+    searchQuery = title;
+    handleSearch();
+  }
+
+  async function loadAlbumTracks(album: any) {
+    if (!album?.id) return;
+    albumTracksLoading = true;
+    albumTracksError = '';
+    selectedAlbumTitle = album?.name ?? '';
+    albumTracks = [];
+    try {
+      const resp = await fetch(`/api/album/${album.id}`);
+      if (!resp.ok) {
+        throw new Error(await resp.text());
+      }
+      const data = await resp.json();
+      const tracks = data?.tracks?.items ?? [];
+      albumTracks = Array.isArray(tracks) ? tracks : [];
+    } catch (err) {
+      console.error('loadAlbumTracks failed', err);
+      albumTracksError = 'Album-Titel konnten nicht geladen werden.';
+    } finally {
+      albumTracksLoading = false;
+    }
+  }
+
   const unsubAudio = currentAudio.subscribe((audio) => {
     if (!audio) {
       isPlaying = false;
@@ -435,17 +470,60 @@
           <button class="btn primary" onclick={() => handlePreview(heroTrack)}>
             {getPreviewUrl(heroTrack) ? (currentPreviewUrl === getPreviewUrl(heroTrack) && isPlaying ? 'Pause' : 'Play first') : 'Play on YouTube'}
           </button>
-          <button class="btn secondary" onclick={() => scoreAndRecommend(heroTrack)} disabled={scoreLoadingId === heroTrack.id || !heroIsTrack}>
-            {heroIsTrack
-              ? (scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe')
-              : 'Nur für Songs'}
-          </button>
+          {#if heroIsTrack}
+            <button class="btn secondary" onclick={() => scoreAndRecommend(heroTrack)} disabled={scoreLoadingId === heroTrack.id}>
+              {scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe'}
+            </button>
+          {:else if searchType === 'album'}
+            <button class="btn secondary" onclick={() => loadAlbumTracks(heroTrack)}>
+              Album-Titel anzeigen
+            </button>
+          {:else}
+            <button class="btn ghost" disabled>Nur für Songs</button>
+          {/if}
         {:else}
           <button class="btn ghost" disabled>Keine Auswahl</button>
         {/if}
       </div>
     </div>
   </section>
+
+  {#if searchType === 'album'}
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <h2>Album Tracks {selectedAlbumTitle ? `– ${selectedAlbumTitle}` : ''}</h2>
+          {#if albumTracksLoading} <span class="count">Loading…</span> {/if}
+        </div>
+      </div>
+
+      {#if albumTracksError}
+        <p class="error">{albumTracksError}</p>
+      {:else if albumTracksLoading}
+        <p class="muted">Lade Tracks…</p>
+      {:else if !albumTracks.length}
+        <p class="muted">Album auswählen, um die Titel zu sehen.</p>
+      {:else}
+        <div class="tracklist">
+          {#each albumTracks as track (track.id ?? track.uri ?? track.name)}
+            <div class="track-row">
+              <div class="track-num">♪</div>
+              <div class="track-main">
+                <div class="track-title">{track.name}</div>
+                <div class="track-sub">{track.artists?.[0]?.name ?? ''}</div>
+              </div>
+              <div class="track-actions">
+                <button class="btn ghost" onclick={() => handlePreview(track)}>
+                  {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
+                </button>
+                <a class="btn secondary" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Open</a>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
+  {/if}
 
   <section class="panel">
     <div class="panel-header">
@@ -470,11 +548,17 @@
               <button class="btn ghost" onclick={() => handlePreview(item)}>
                 {getPreviewUrl(item) ? (currentPreviewUrl === getPreviewUrl(item) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              <button class="btn secondary" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id || !isTrack(item)}>
-                {isTrack(item)
-                  ? (scoreLoadingId === item.id ? 'Scoring...' : 'Match Vibe')
-                  : 'Nur Songs'}
-              </button>
+              {#if searchType === 'album'}
+                <button class="btn secondary" onclick={() => loadAlbumTracks(item)}>
+                  Tracks
+                </button>
+              {:else}
+                <button class="btn secondary" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id || !isTrack(item)}>
+                  {isTrack(item)
+                    ? (scoreLoadingId === item.id ? 'Scoring...' : 'Match Vibe')
+                    : 'Nur Songs'}
+                </button>
+              {/if}
             </div>
           </div>
         {/each}
@@ -525,10 +609,10 @@
     </div>
     <div class="playlist-grid">
       {#each curatedPlaylists as pl}
-        <div class="playlist-card" style={`background:${pl.color}`}>
+        <button class="playlist-card" style={`background:${pl.color}`} onclick={() => handlePlaylistClick(pl.title)} type="button">
           <div class="playlist-title">{pl.title}</div>
           <div class="playlist-sub">{pl.subtitle}</div>
-        </div>
+        </button>
       {/each}
     </div>
   </section>
@@ -802,6 +886,9 @@
     flex-direction: column;
     justify-content: flex-end;
     gap: 4px;
+    border: none;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
   }
 
   .playlist-title {
@@ -811,6 +898,16 @@
   .playlist-sub {
     font-size: 14px;
     color: rgba(0,0,0,0.8);
+  }
+
+  .playlist-card:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .playlist-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.45);
   }
 
   .vibe-grid {
@@ -852,6 +949,10 @@
     border-radius: 12px;
     font-size: 13px;
     color: #bdbdbd;
+  }
+
+  .album-tracklist .track-row {
+    grid-template-columns: 32px 1fr 200px;
   }
 
   .muted {
