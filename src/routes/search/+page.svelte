@@ -33,8 +33,9 @@
   let lastAutoScoreId: string | null = $state(null);
   let initializedFromUrl = $state(false);
 
-  $: heroTrack = results?.[0] ?? null;
-  $: heroImage = heroTrack ? getImage(heroTrack) : '';
+  const heroTrack = $derived(results?.[0] ?? null);
+  const heroImage = $derived(heroTrack ? getImage(heroTrack) : '');
+  const heroIsTrack = $derived(isTrack(heroTrack));
 
   async function handleSearch() {
     if (!searchQuery.trim()) {
@@ -150,6 +151,14 @@
     ?? item?.track?.preview_url
     ?? null;
 
+  const isTrack = (item: any) => {
+    if (!item) return false;
+    if (item.type === 'track') return true;
+    if (typeof item.duration_ms === 'number') return true;
+    if (item.album && item.artists) return true;
+    return false;
+  };
+
   const genrePixelMap: Record<string, string> = {
     pop: 'https://media.tenor.com/2bQ0g5zn-SAAAAAd/michael-jackson-mj.gif',
     'hip hop': 'https://media.tenor.com/fgR2H7W82dAAAAAd/kendrick-lamar-pixel.gif',
@@ -255,21 +264,33 @@
   }
 
   async function scoreAndRecommend(item: any) {
-    if (!item?.id) return;
+    if (!item?.id) {
+      errorMsg = 'Kein Track ausgewählt.';
+      return;
+    }
+    if (!isTrack(item)) {
+      errorMsg = 'Match Vibe funktioniert nur für Songs. Bitte einen Track wählen.';
+      return;
+    }
     scoreLoadingId = item.id;
     errorMsg = '';
 
     try {
-      const featResp = await fetch(`/api/features/${item.id}`);
-      if (!featResp.ok) {
-        const txt = await featResp.text();
-        throw new Error(txt || 'Features request failed');
+      let f: any = null;
+      try {
+        const featResp = await fetch(`/api/features/${item.id}`);
+        if (featResp.ok) {
+          f = await featResp.json();
+        }
+      } catch (err) {
+        console.warn('features request failed, using defaults', err);
       }
-      const f = await featResp.json();
-      const energy = Math.round((f.energy ?? 0) * 100);
-      const valence = Math.round((f.valence ?? 0) * 100);
-      const dance = Math.round((f.danceability ?? 0) * 100);
-      const tempo = Math.round(f.tempo ?? 120);
+
+      // Fallback-Werte, falls Features nicht geladen werden können
+      const energy = Math.round(((f?.energy ?? 0.6) as number) * 100);
+      const valence = Math.round(((f?.valence ?? 0.5) as number) * 100);
+      const dance = Math.round(((f?.danceability ?? 0.5) as number) * 100);
+      const tempo = Math.round((f?.tempo as number) ?? 120);
 
       const tempoScore = Math.min(tempo, 200) / 200 * 100;
       const score = Math.max(0, Math.min(100, Math.round(
@@ -301,12 +322,17 @@
         seedTrack: item.id
       });
 
-      const recResp = await fetch(`/api/vibe?${params.toString()}`);
-      const rec = recResp.ok ? await recResp.json() : [];
-      vibeMatches = Array.isArray(rec) ? rec : [];
+      try {
+        const recResp = await fetch(`/api/vibe?${params.toString()}`);
+        const rec = recResp.ok ? await recResp.json() : [];
+        vibeMatches = Array.isArray(rec) ? rec : [];
+      } catch (err) {
+        console.warn('vibe recs failed, returning empty', err);
+        vibeMatches = [];
+      }
     } catch (e) {
       console.error('scoreAndRecommend failed', e);
-      errorMsg = 'Scoring oder Empfehlung fehlgeschlagen.';
+      errorMsg = 'Scoring oder Empfehlung fehlgeschlagen (verwende einen Song mit Preview oder probiere erneut).';
       vibeMatches = [];
     } finally {
       scoreLoadingId = null;
@@ -409,8 +435,10 @@
           <button class="btn primary" onclick={() => handlePreview(heroTrack)}>
             {getPreviewUrl(heroTrack) ? (currentPreviewUrl === getPreviewUrl(heroTrack) && isPlaying ? 'Pause' : 'Play first') : 'Play on YouTube'}
           </button>
-          <button class="btn secondary" onclick={() => scoreAndRecommend(heroTrack)} disabled={scoreLoadingId === heroTrack.id}>
-            {scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe'}
+          <button class="btn secondary" onclick={() => scoreAndRecommend(heroTrack)} disabled={scoreLoadingId === heroTrack.id || !heroIsTrack}>
+            {heroIsTrack
+              ? (scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe')
+              : 'Nur für Songs'}
           </button>
         {:else}
           <button class="btn ghost" disabled>Keine Auswahl</button>
@@ -442,9 +470,48 @@
               <button class="btn ghost" onclick={() => handlePreview(item)}>
                 {getPreviewUrl(item) ? (currentPreviewUrl === getPreviewUrl(item) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              <button class="btn secondary" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id}>
-                {scoreLoadingId === item.id ? 'Scoring...' : 'Match Vibe'}
+              <button class="btn secondary" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id || !isTrack(item)}>
+                {isTrack(item)
+                  ? (scoreLoadingId === item.id ? 'Scoring...' : 'Match Vibe')
+                  : 'Nur Songs'}
               </button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <h2>Vibe Matches</h2>
+        {#if scoreLoadingId}
+          <span class="count">loading…</span>
+        {/if}
+      </div>
+      {#if lastScore}
+        <div class="score-chip">Score {lastScore.score}</div>
+      {/if}
+    </div>
+
+    {#if vibeMatches.length === 0}
+      <p class="muted">Noch keine Empfehlungen. Wähle einen Track und klicke „Match Vibe“.</p>
+    {:else}
+      <div class="vibe-grid">
+        {#each vibeMatches.slice(0, 8) as match (match.id ?? match.uri ?? match.name)}
+          <div class="vibe-card">
+            <div class="vibe-main">
+              <div class="vibe-title">{getTitle(match)}</div>
+              <div class="vibe-sub">{getSubtitle(match)}</div>
+            </div>
+            <div class="vibe-actions">
+              <button class="btn ghost" onclick={() => handlePreview(match)}>
+                {getPreviewUrl(match) ? (currentPreviewUrl === getPreviewUrl(match) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
+              </button>
+              <a class="btn secondary" href={getExternalUrl(match) ?? '#'} target="_blank" rel="noreferrer">
+                Open
+              </a>
             </div>
           </div>
         {/each}
@@ -744,6 +811,47 @@
   .playlist-sub {
     font-size: 14px;
     color: rgba(0,0,0,0.8);
+  }
+
+  .vibe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+
+  .vibe-card {
+    border: 1px solid #2c2c2c;
+    border-radius: 12px;
+    padding: 12px;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .vibe-title {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .vibe-sub {
+    color: #bdbdbd;
+    font-size: 14px;
+  }
+
+  .vibe-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .score-chip {
+    background: #2c2c2c;
+    border: 1px solid #3a3a3a;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #bdbdbd;
   }
 
   .muted {

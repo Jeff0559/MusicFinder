@@ -41,19 +41,32 @@ export const GET: RequestHandler = async ({ url }) => {
 
   try {
     const primaryParams = buildParams(seed);
-    let data = await spotifyGet<any>('/recommendations?' + primaryParams.toString());
-    let tracks = data?.tracks ?? [];
+    let tracks: any[] = [];
 
-    // Fallback: wenn leer oder nicht vorhanden, probiere mit pop (nur wenn kein seedTrack gesetzt ist)
-    if ((!Array.isArray(tracks) || tracks.length === 0) && !seedTrack) {
-      const fallbackParams = buildParams('pop');
-      data = await spotifyGet<any>('/recommendations?' + fallbackParams.toString());
+    // Primärer Versuch
+    try {
+      const data = await spotifyGet<any>('/recommendations?' + primaryParams.toString());
       tracks = data?.tracks ?? [];
+    } catch (err) {
+      console.error('VIBE primary failed', err);
     }
 
-    return json(tracks);
+    // Fallback auf pop, wenn leer oder fehlgeschlagen
+    if ((!Array.isArray(tracks) || tracks.length === 0)) {
+      try {
+        const fallbackParams = buildParams('pop');
+        const data = await spotifyGet<any>('/recommendations?' + fallbackParams.toString());
+        tracks = data?.tracks ?? [];
+      } catch (err) {
+        console.error('VIBE fallback failed', err);
+        tracks = [];
+      }
+    }
+
+    return json(Array.isArray(tracks) ? tracks : []);
   } catch (error) {
     console.error('VIBE MATCH FAILED', error);
-    return json({ error: 'Failed to match vibe', detail: (error as Error)?.message ?? String(error) }, { status: 500 });
+    // Schicke leeres Array statt 500, damit UI nicht abbricht
+    return json([]);
   }
 };

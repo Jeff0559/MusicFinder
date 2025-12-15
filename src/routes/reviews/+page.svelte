@@ -57,6 +57,9 @@
 				throw new Error(await resp.text());
 			}
 			const data = await resp.json();
+			if (data?.error) {
+				error = data.error;
+			}
 			reviewedTracks = Array.isArray(data.reviews) ? data.reviews : [];
 			selectedAlbum = reviewedTracks[0] ?? null;
 		} catch (err) {
@@ -115,6 +118,9 @@
 			}
 
 			const data = await resp.json();
+			if (data?.error) {
+				throw new Error(data.error);
+			}
 			if (data?.review) {
 				reviewedTracks = [data.review, ...reviewedTracks];
 				selectedAlbum = data.review;
@@ -138,6 +144,11 @@
 			if (!resp.ok) {
 				const text = await resp.text();
 				throw new Error(text || 'Delete failed');
+			}
+
+			const data = await resp.json();
+			if (data?.error) {
+				throw new Error(data.error);
 			}
 
 			reviewedTracks = reviewedTracks.filter((t) => t.id !== id);
@@ -270,7 +281,7 @@
 						x
 					</button>
 				</div>
-				<form class="review-form" on:submit|preventDefault={submitReview}>
+				<form class="review-form" onsubmit={(event) => { event.preventDefault(); submitReview(event); }}>
 					<div class="form-group">
 						<label for="track-name">Track Name</label>
 						<input
@@ -809,5 +820,3 @@
 		}
 	}
 </style>
-
-

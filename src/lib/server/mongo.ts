@@ -25,9 +25,19 @@ async function getClient() {
     throw new Error('DB_URI ist nicht gesetzt');
   }
 
-  cachedClient = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
-  await cachedClient.connect();
-  return cachedClient;
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+  try {
+    await client.connect();
+    cachedClient = client;
+    return client;
+  } catch (err) {
+    try {
+      await client.close();
+    } catch {
+      // ignore
+    }
+    throw err;
+  }
 }
 
 export async function getReviewsCollection(): Promise<Collection<ReviewDocument>> {
