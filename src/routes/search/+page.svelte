@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/stores';
   import { currentAudio, currentPreview, playPreview as startPreview, stopPreview } from '$lib/stores/audio';
   import { recent } from '$lib/stores/recent';
   import { vibeScores } from '$lib/stores/vibeScores';
 
-  // Design tokens for playlists
   const curatedPlaylists = [
     { title: 'Grunge Revolution', subtitle: '90s alt energy', color: '#66BB6A' },
     { title: 'Sounds of the 90s', subtitle: 'Nostalgic anthems', color: '#FFA726' },
@@ -36,10 +35,22 @@
   let albumTracksLoading = $state(false);
   let albumTracksError = $state('');
   let selectedAlbumTitle = $state('');
+  let userReviews: any[] = $state([]);
+  let reviewsLoaded = $state(false);
+
+  const resultKey = (item: any) => {
+    const t = normalize(getTitle(item));
+    const a = normalize((item?.artists ?? item?.album?.artists ?? [])[0]?.name ?? '');
+    const id = item?.id ?? item?.uri ?? '';
+    return `${t}|${a}|${id}`;
+  };
 
   const heroTrack = $derived(results?.[0] ?? null);
   const heroImage = $derived(heroTrack ? getImage(heroTrack) : '');
   const heroIsTrack = $derived(isTrack(heroTrack));
+  const uniqueResults = $derived(
+    Array.from(new Map((results ?? []).map((r) => [resultKey(r), r])).values())
+  );
 
   async function handleSearch() {
     if (!searchQuery.trim()) {
@@ -92,6 +103,7 @@
     albumTracks = [];
     albumTracksError = '';
     selectedAlbumTitle = '';
+    // Reviews behalten, damit Treffer sofort angezeigt werden
   }
 
   $effect(() => {
@@ -122,6 +134,10 @@
     if (lastAutoScoreId === first.id) return;
     lastAutoScoreId = first.id;
     scoreAndRecommend(first);
+  });
+
+  onMount(() => {
+    loadUserReviews();
   });
 
   const getImage = (item: any) =>
@@ -272,11 +288,11 @@
 
   async function scoreAndRecommend(item: any) {
     if (!item?.id) {
-      errorMsg = 'Kein Track ausgewählt.';
+      errorMsg = 'Kein Track ausgewaehlt.';
       return;
     }
     if (!isTrack(item)) {
-      errorMsg = 'Match Vibe funktioniert nur für Songs. Bitte einen Track wählen.';
+      errorMsg = 'Match Vibe funktioniert nur fuer Songs. Bitte einen Track waehlen.';
       return;
     }
     scoreLoadingId = item.id;
@@ -293,7 +309,6 @@
         console.warn('features request failed, using defaults', err);
       }
 
-      // Fallback-Werte, falls Features nicht geladen werden können
       const energy = Math.round(((f?.energy ?? 0.6) as number) * 100);
       const valence = Math.round(((f?.valence ?? 0.5) as number) * 100);
       const dance = Math.round(((f?.danceability ?? 0.5) as number) * 100);
@@ -402,6 +417,71 @@
     }
   }
 
+  async function loadUserReviews() {
+    try {
+      const resp = await fetch('/api/user-reviews');
+      if (!resp.ok) return;
+      const data = await resp.json();
+      userReviews = Array.isArray(data.reviews) ? data.reviews : [];
+      reviewsLoaded = true;
+    } catch (err) {
+      console.error('loadUserReviews failed', err);
+      reviewsLoaded = false;
+    }
+  }
+
+  const normalize = (txt: string) => txt.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+
+  const matchReview = (item: any) => {
+    if (!reviewsLoaded || !item) return null;
+    const name = normalize(getTitle(item));
+    const artistList: string[] = (item?.artists ?? item?.album?.artists ?? []).map((a: any) => normalize(a?.name ?? '')).filter(Boolean);
+    const artist = artistList[0] ?? '';
+    const trackAlbum = normalize(item?.album?.name ?? '');
+
+    return userReviews.find((r) => {
+      const rn = normalize(r.trackName ?? '');
+      const ra = normalize(r.artist ?? '');
+      const rAlbum = normalize(r.album ?? '');
+      const nameMatch = rn === name || rn.includes(name) || name.includes(rn);
+      const artistMatch =
+        ra === artist ||
+        ra.includes(artist) ||
+        artist.includes(ra) ||
+        artistList.some((a) => a === ra || a.includes(ra) || ra.includes(a));
+      const albumMatch = rAlbum && trackAlbum ? (rAlbum === trackAlbum || rAlbum.includes(trackAlbum) || trackAlbum.includes(rAlbum)) : false;
+      return nameMatch && (artistMatch || albumMatch || !ra || artistList.length === 0);
+    }) ?? null;
+  };
+
+  const matchedReviews = $derived(userReviews.filter((r) => {
+    if (!heroTrack) return false;
+    const name = normalize(getTitle(heroTrack));
+    const artistList: string[] = (heroTrack?.artists ?? heroTrack?.album?.artists ?? [])
+      .map((a: any) => normalize(a?.name ?? ''))
+      .filter(Boolean);
+    const artist = artistList[0] ?? '';
+    const trackAlbum = normalize(heroTrack?.album?.name ?? '');
+
+    const rn = normalize(r.trackName ?? '');
+    const ra = normalize(r.artist ?? '');
+    const rAlbum = normalize(r.album ?? '');
+    const nameMatch = rn === name || rn.includes(name) || name.includes(rn);
+    const artistMatch =
+      ra === artist ||
+      ra.includes(artist) ||
+      artist.includes(ra) ||
+      artistList.some((a) => a === ra || a.includes(ra) || ra.includes(a));
+    const albumMatch = rAlbum && trackAlbum ? (rAlbum === trackAlbum || rAlbum.includes(trackAlbum) || trackAlbum.includes(rAlbum)) : false;
+    return nameMatch && (artistMatch || albumMatch || !ra || artistList.length === 0);
+  }));
+
+  const fmtDate = (d?: string) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('de-DE');
+  };
+
   const unsubAudio = currentAudio.subscribe((audio) => {
     if (!audio) {
       isPlaying = false;
@@ -479,7 +559,7 @@
               Album-Titel anzeigen
             </button>
           {:else}
-            <button class="btn ghost" disabled>Nur für Songs</button>
+            <button class="btn ghost" disabled>nur fuer Songs</button>
           {/if}
         {:else}
           <button class="btn ghost" disabled>Keine Auswahl</button>
@@ -488,21 +568,53 @@
     </div>
   </section>
 
+  {#if matchedReviews.length}
+    <aside class="review-side">
+      <div class="panel review-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>Dein Review</h2>
+          </div>
+        </div>
+        <div class="review-cards">
+          {#each matchedReviews as r (r.id ?? r.trackName)}
+            <div class="review-card">
+              <div class="review-header-row">
+                <div>
+                  <div class="review-title">{r.trackName}</div>
+                  <div class="review-sub">{r.artist}</div>
+                </div>
+                <div class="review-rating">{r.rating?.toFixed?.(1) ?? '–'} / 5</div>
+              </div>
+              {#if r.notes}
+                <p class="review-notes">{r.notes}</p>
+              {/if}
+              <div class="review-footer-row">
+                <span class="review-date">{fmtDate(r.createdAt ?? r.date)}</span>
+                {#if r.album}<span class="review-album">{r.album}</span>{/if}
+              </div>
+            </div>
+          {/each}
+        </div>
+      </div>
+    </aside>
+  {/if}
+
   {#if searchType === 'album'}
     <section class="panel">
       <div class="panel-header">
         <div class="panel-title">
-          <h2>Album Tracks {selectedAlbumTitle ? `– ${selectedAlbumTitle}` : ''}</h2>
-          {#if albumTracksLoading} <span class="count">Loading…</span> {/if}
+          <h2>Album Tracks {selectedAlbumTitle ? `- ${selectedAlbumTitle}` : ''}</h2>
+          {#if albumTracksLoading} <span class="count">Loading...</span> {/if}
         </div>
       </div>
 
       {#if albumTracksError}
         <p class="error">{albumTracksError}</p>
       {:else if albumTracksLoading}
-        <p class="muted">Lade Tracks…</p>
+        <p class="muted">Lade Tracks...</p>
       {:else if !albumTracks.length}
-        <p class="muted">Album auswählen, um die Titel zu sehen.</p>
+        <p class="muted">Album auswaehlen, um die Titel zu sehen.</p>
       {:else}
         <div class="tracklist">
           {#each albumTracks as track (track.id ?? track.uri ?? track.name)}
@@ -513,6 +625,14 @@
                 <div class="track-sub">{track.artists?.[0]?.name ?? ''}</div>
               </div>
               <div class="track-actions">
+                {#if matchReview(track)}
+                  <div class="review-chip small">
+                    <span>Review {matchReview(track)?.rating?.toFixed?.(1) ?? ''}/5</span>
+                    {#if matchReview(track)?.notes}
+                      <span class="review-note">{matchReview(track)?.notes}</span>
+                    {/if}
+                  </div>
+                {/if}
                 <button class="btn ghost" onclick={() => handlePreview(track)}>
                   {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
                 </button>
@@ -537,7 +657,7 @@
       <p class="muted">Keine Ergebnisse. Suche starten und wir bauen deine Liste.</p>
     {:else}
       <div class="tracklist">
-        {#each results.slice(0, 12) as item, idx (item.id ?? item.uri ?? item.name)}
+        {#each uniqueResults.slice(0, 12) as item, idx (item.id ?? item.uri ?? item.name)}
           <div class="track-row">
             <div class="track-num">{idx + 1}</div>
             <div class="track-main">
@@ -571,7 +691,7 @@
       <div class="panel-title">
         <h2>Vibe Matches</h2>
         {#if scoreLoadingId}
-          <span class="count">loading…</span>
+          <span class="count">loading...</span>
         {/if}
       </div>
       {#if lastScore}
@@ -580,7 +700,7 @@
     </div>
 
     {#if vibeMatches.length === 0}
-      <p class="muted">Noch keine Empfehlungen. Wähle einen Track und klicke „Match Vibe“.</p>
+      <p class="muted">Noch keine Empfehlungen. Waehle einen Track und klicke "Match Vibe".</p>
     {:else}
       <div class="vibe-grid">
         {#each vibeMatches.slice(0, 8) as match (match.id ?? match.uri ?? match.name)}
@@ -790,6 +910,7 @@
     display: flex;
     gap: 10px;
     margin-top: 6px;
+    flex-wrap: wrap;
   }
 
   .panel {
@@ -805,6 +926,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
+    gap: 10px;
   }
 
   .panel-title {
@@ -868,6 +990,7 @@
     display: flex;
     gap: 8px;
     justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   .playlist-grid {
@@ -949,6 +1072,91 @@
     border-radius: 12px;
     font-size: 13px;
     color: #bdbdbd;
+  }
+
+  .review-panel .review-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+
+  .review-card {
+    border: 1px solid #2c2c2c;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #151515;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .review-header-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .review-title {
+    font-weight: 700;
+  }
+
+  .review-sub {
+    color: #bdbdbd;
+    font-size: 13px;
+  }
+
+  .review-rating {
+    font-weight: 700;
+    color: #00e676;
+  }
+
+  .review-notes {
+    margin: 0;
+    color: #e0e0e0;
+    font-size: 14px;
+  }
+
+  .review-footer-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    color: #bdbdbd;
+  }
+
+  .review-album {
+    color: #8ab4ff;
+  }
+
+  .review-side {
+    position: absolute;
+    right: 18px;
+    top: 120px;
+    width: min(340px, calc(100% - 32px));
+    z-index: 2;
+  }
+
+  .review-chip {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    padding: 6px 10px;
+    border-radius: 12px;
+    color: #fff;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .review-chip.small {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .review-note {
+    color: #bdbdbd;
+    font-size: 12px;
   }
 
   .album-tracklist .track-row {
