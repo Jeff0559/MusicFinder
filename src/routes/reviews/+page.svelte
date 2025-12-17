@@ -336,6 +336,30 @@
 </div>
 
 <style>
+	:global(body) {
+		background-color: #0f1218;
+		min-height: 100vh;
+		position: relative;
+	}
+	:global(body)::before {
+		content: '';
+		position: fixed;
+		inset: -10%;
+		background: url('/bg-reviews.gif?v=2') center/cover no-repeat;
+		transform: scale(0.85);
+		transform-origin: center;
+		z-index: -2;
+		pointer-events: none;
+	}
+	:global(body)::after {
+		content: '';
+		position: fixed;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(8, 10, 14, 0.52), rgba(8, 10, 14, 0.74));
+		z-index: -1;
+		pointer-events: none;
+	}
+
 	.container {
 		max-width: 1600px;
 		margin: 0 auto;

@@ -287,7 +287,8 @@
   }
 
   async function scoreAndRecommend(item: any) {
-    if (!item?.id) {
+    const trackId = item?.id ?? item?.track?.id ?? null;
+    if (!trackId) {
       errorMsg = 'Kein Track ausgewaehlt.';
       return;
     }
@@ -295,13 +296,13 @@
       errorMsg = 'Match Vibe funktioniert nur fuer Songs. Bitte einen Track waehlen.';
       return;
     }
-    scoreLoadingId = item.id;
+    scoreLoadingId = trackId;
     errorMsg = '';
 
     try {
       let f: any = null;
       try {
-        const featResp = await fetch(`/api/features/${item.id}`);
+        const featResp = await fetch(`/api/features/${trackId}`);
         if (featResp.ok) {
           f = await featResp.json();
         }
@@ -341,16 +342,21 @@
         danceability: String(dance),
         tempo: String(tempo),
         genre: (item?.artists?.[0]?.genres?.[0] ?? 'pop'),
-        seedTrack: item.id
+        seedTrack: trackId
       });
 
       try {
         const recResp = await fetch(`/api/vibe?${params.toString()}`);
         const rec = recResp.ok ? await recResp.json() : [];
-        vibeMatches = Array.isArray(rec) ? rec : [];
+        const matches = Array.isArray(rec) ? rec : [];
+        vibeMatches = matches;
+        if (!matches.length) {
+          errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
+        }
       } catch (err) {
         console.warn('vibe recs failed, returning empty', err);
         vibeMatches = [];
+        errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
       }
     } catch (e) {
       console.error('scoreAndRecommend failed', e);
@@ -758,8 +764,28 @@
 
 <style>
   :global(body) {
-    background: #141414;
+    background-color: #101217;
+    min-height: 100vh;
     color: #ffffff;
+    position: relative;
+  }
+  :global(body)::before {
+    content: '';
+    position: fixed;
+    inset: -10%;
+    background: url('/bg-search.gif?v=2') center/cover no-repeat;
+    transform: scale(0.85);
+    transform-origin: center;
+    z-index: -2;
+    pointer-events: none;
+  }
+  :global(body)::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 12, 16, 0.52), rgba(10, 12, 16, 0.74));
+    z-index: -1;
+    pointer-events: none;
   }
 
   .page {

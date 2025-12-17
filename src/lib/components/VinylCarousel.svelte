@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   export let items: { image: string; label: string }[] = [];
   export let onSelect: (label: string) => void = () => {};
 </script>
@@ -19,12 +19,14 @@
 <style>
   .carousel {
     display: flex;
-    gap: 28px;
-    padding: 20px 10px;
+    gap: 24px;
+    padding: 18px 8px 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     justify-content: center;
   }
+
+  .carousel::-webkit-scrollbar { display: none; }
 
   .vinyl {
     width: 150px;
@@ -37,24 +39,52 @@
     perspective: 800px;
   }
 
+  .vinyl:focus-visible {
+    outline: 2px solid var(--accent-info);
+    outline-offset: 6px;
+    border-radius: 50%;
+  }
+
   .disc {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: radial-gradient(circle, #444 0%, #000 75%);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12), rgba(0,0,0,0.7) 55%, rgba(0,0,0,0.95) 75%),
+      repeating-radial-gradient(circle, rgba(255,255,255,0.06) 0 1px, rgba(0,0,0,0) 2px 4px);
     position: relative;
     transform-style: preserve-3d;
     transition: transform 0.35s ease, box-shadow 0.3s ease;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.6);
   }
 
-  /* 3D Hover Effekt */
+  .disc::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: inset 0 0 14px rgba(255,255,255,0.05);
+  }
+
+  .disc::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 10px;
+    right: 20px;
+    background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 70%);
+    opacity: 0.45;
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
   .vinyl:hover .disc {
     transform: rotateY(-22deg) rotateX(12deg) scale(1.12);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.75);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.75);
   }
 
-  /* Picture Vinyl Cover */
   .cover {
     position: absolute;
     width: 58%;
@@ -65,9 +95,20 @@
     border-radius: 50%;
     background-size: cover;
     background-position: center;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,255,255,0.12);
   }
 
-  /* leichtes Drehen beim Scroll */
-  .carousel::-webkit-scrollbar { display: none; }
+  .cover::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0d0f12;
+    border: 1px solid rgba(255,255,255,0.25);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 </style>

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   export let title: string;
   export let items: { image: string; name: string; meta: string }[] = [];
   let container: HTMLDivElement | null = null;
@@ -11,42 +11,108 @@
   }
 </script>
 
-<section class="mb-10">
-  <h2 class="title">{title}</h2>
-
-  <div class="relative">
-    <button class="scroll-btn left" onclick={scrollLeft}>⬅</button>
-    <button class="scroll-btn right" onclick={scrollRight}>➡</button>
-
-    <div bind:this={container} class="track-list flex gap-4 overflow-x-auto no-scrollbar py-3">
-      {#if items.length === 0}
-        <div class="text-gray">Loading trending items...</div>
-      {:else}
-        {#each items as item}
-          <div class="card">
-            <img src={item.image} class="thumb" alt={item.name} />
-            <p class="name">{item.name}</p>
-            <p class="meta">{item.meta}</p>
-          </div>
-        {/each}
-      {/if}
+<section class="block">
+  <div class="header">
+    <h2 class="title">{title}</h2>
+    <div class="actions">
+      <button class="scroll-btn left" onclick={scrollLeft} aria-label="Scroll left">Prev</button>
+      <button class="scroll-btn right" onclick={scrollRight} aria-label="Scroll right">Next</button>
     </div>
+  </div>
+
+  <div bind:this={container} class="track-list">
+    {#if items.length === 0}
+      <div class="text-muted">Loading trending items...</div>
+    {:else}
+      {#each items as item}
+        <div class="card">
+          <img src={item.image} class="thumb" alt={item.name} />
+          <p class="name">{item.name}</p>
+          <p class="meta">{item.meta}</p>
+        </div>
+      {/each}
+    {/if}
   </div>
 </section>
 
 <style>
-  .title{ font-size:1.125rem; font-weight:600; color:var(--text); display:flex; align-items:center; gap:0.5rem; margin-bottom:.5rem }
-  .relative{ position:relative }
-  .scroll-btn{ position:absolute; top:40%; transform:translateY(-50%); z-index:20; background:#2ecc71; color:black; font-size:18px; padding:6px 10px; border-radius:8px; cursor:pointer; border:none }
-  .scroll-btn:hover{ background:#58ff9b }
-  .scroll-btn.left{ left:0 }
-  .scroll-btn.right{ right:0 }
-  .track-list{ padding: 0 40px } /* spacing to account for buttons */
-  .no-scrollbar::-webkit-scrollbar{ display:none }
-  .card{ background:#1d232c; border:1px solid #2b323d; min-width:180px; border-radius:12px; padding:12px; transition:background .15s }
-  .card:hover{ background:#252d39 }
-  .thumb{ width:100%; height:128px; object-fit:cover; border-radius:8px; margin-bottom:8px }
-  .name{ color:var(--text); font-weight:600; margin:0 }
-  .meta{ color:#9fb0c6; font-size:.875rem; margin:0 }
-  .text-gray{ color:#9fb0c6 }
+  .block{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .title{
+    font-size:18px;
+    font-weight:600;
+    color:var(--text-primary);
+    margin:0;
+  }
+  .actions{
+    display:flex;
+    gap:8px;
+  }
+  .scroll-btn{
+    background: rgba(255,255,255,0.06);
+    color:var(--text-secondary);
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,0.08);
+    transition: 140ms ease;
+  }
+  .scroll-btn:hover{
+    background: var(--accent-primary);
+    color:#0a1014;
+    border-color: transparent;
+    box-shadow: 0 6px 16px rgba(56, 224, 127, 0.2);
+  }
+  .track-list{
+    display:flex;
+    gap:16px;
+    overflow-x:auto;
+    padding:8px 4px 12px;
+    scroll-snap-type:x mandatory;
+  }
+  .track-list::-webkit-scrollbar{ display:none; }
+  .card{
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    min-width:180px;
+    border-radius:14px;
+    padding:12px;
+    scroll-snap-align:start;
+    transition: transform 150ms ease, border 150ms ease;
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    border-color: rgba(56, 224, 127, 0.35);
+  }
+  .thumb{
+    width:100%;
+    height:128px;
+    object-fit:cover;
+    border-radius:10px;
+    margin-bottom:8px;
+    background: var(--bg-panel);
+  }
+  .name{
+    color:var(--text-primary);
+    font-weight:600;
+    margin:0 0 4px 0;
+  }
+  .meta{
+    color:var(--text-secondary);
+    font-size:13px;
+    margin:0;
+  }
+  .text-muted{
+    color:var(--text-muted);
+  }
 </style>

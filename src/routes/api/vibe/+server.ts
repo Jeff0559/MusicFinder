@@ -40,10 +40,10 @@ export const GET: RequestHandler = async ({ url }) => {
     });
 
   try {
-    const primaryParams = buildParams(seed);
     let tracks: any[] = [];
 
-    // Primärer Versuch
+    // 1) Primär: seedTrack + Targets
+    const primaryParams = buildParams(seed);
     try {
       const data = await spotifyGet<any>('/recommendations?' + primaryParams.toString());
       tracks = data?.tracks ?? [];
@@ -51,10 +51,21 @@ export const GET: RequestHandler = async ({ url }) => {
       console.error('VIBE primary failed', err);
     }
 
-    // Fallback auf pop, wenn leer oder fehlgeschlagen
+    // 2) Fallback: seedTrack ohne Targets (nur limit/market), falls leer
+    if ((!Array.isArray(tracks) || tracks.length === 0) && seedTrack) {
+      try {
+        const simple = new URLSearchParams({ seed_tracks: seedTrack, limit: String(limit), market: 'US' });
+        const data = await spotifyGet<any>('/recommendations?' + simple.toString());
+        tracks = data?.tracks ?? [];
+      } catch (err) {
+        console.error('VIBE seed-only failed', err);
+      }
+    }
+
+    // 3) Fallback: pop Genre
     if ((!Array.isArray(tracks) || tracks.length === 0)) {
       try {
-        const fallbackParams = buildParams('pop');
+        const fallbackParams = new URLSearchParams({ seed_genres: 'pop', limit: String(limit), market: 'US' });
         const data = await spotifyGet<any>('/recommendations?' + fallbackParams.toString());
         tracks = data?.tracks ?? [];
       } catch (err) {
