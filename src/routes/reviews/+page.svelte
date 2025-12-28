@@ -18,12 +18,13 @@
 		id: review.id,
 		name: review.album,
 		artists: [{ id: review.id, name: review.artist }],
-		images: []
+		images: reviewCovers[review.id] ? [{ url: reviewCovers[review.id] }] : []
 	});
 
 	let reviewedTracks: StoredReview[] = [];
 	let selectedAlbum: StoredReview | null = null;
 	let showAddReview = false;
+	let reviewCovers: Record<string, string> = {};
 
 	let newReview: {
 		trackName: string;
@@ -62,11 +63,37 @@
 			}
 			reviewedTracks = Array.isArray(data.reviews) ? data.reviews : [];
 			selectedAlbum = reviewedTracks[0] ?? null;
+			await loadReviewCovers(reviewedTracks);
 		} catch (err) {
 			console.error('loadReviews failed', err);
 			error = 'Konnte Reviews nicht laden.';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadReviewCovers(reviews: StoredReview[]) {
+		if (!reviews.length) return;
+		const updates: Record<string, string> = {};
+		await Promise.all(
+			reviews.map(async (review) => {
+				const query = encodeURIComponent(
+					`${review.trackName} ${review.artist} ${review.album}`.trim()
+				);
+				try {
+					const resp = await fetch(`/api/cover?q=${query}`);
+					if (!resp.ok) return;
+					const data = await resp.json();
+					if (data?.image) {
+						updates[review.id] = data.image;
+					}
+				} catch {
+					// ignore cover fetch errors
+				}
+			})
+		);
+		if (Object.keys(updates).length) {
+			reviewCovers = { ...reviewCovers, ...updates };
 		}
 	}
 
@@ -196,6 +223,13 @@
 				{#each reviewedTracks as track (track.id)}
 					<div class="review-card">
 						<div class="review-header">
+							<div class="review-cover">
+								{#if reviewCovers[track.id]}
+									<img src={reviewCovers[track.id]} alt={track.album} loading="lazy" />
+								{:else}
+									<div class="cover-placeholder">No Image</div>
+								{/if}
+							</div>
 							<div class="review-info">
 								<h3>{track.trackName}</h3>
 								<p class="artist">{track.artist}</p>
@@ -516,6 +550,28 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		gap: var(--space-16);
+	}
+	.review-cover {
+		width: 64px;
+		height: 64px;
+		border-radius: 10px;
+		overflow: hidden;
+		background: #14181f;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		flex-shrink: 0;
+	}
+	.review-cover img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.cover-placeholder {
+		width: 100%;
+		height: 100%;
+		display: grid;
+		place-items: center;
+		color: #8aa0b2;
+		font-size: 0.75rem;
 	}
 
 	.review-info h3 {

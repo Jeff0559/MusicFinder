@@ -20,6 +20,152 @@
     { label: 'Workout', energy: 90, valence: 65, danceability: 82, tempo: 128, genre: 'work-out' }
   ];
 
+  const youtubeSearchUrl = (query: string) =>
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+
+  const pearlMatchTrack = {
+    id: 'pearl-shade',
+    name: 'Pearl',
+    artists: [{ name: 'Shade' }],
+    album: { name: 'Pearl', images: [{ url: '/fallback-cover.png' }] },
+    external_urls: {
+      youtube: youtubeSearchUrl('Shade Pearl'),
+      spotify: 'https://open.spotify.com/search/Pearl%20Shade'
+    }
+  };
+
+  const fixedMatchTracks = [
+    pearlMatchTrack,
+    {
+      id: 'wish-denzel-curry',
+      name: 'Wish',
+      artists: [{ name: 'Denzel Curry' }],
+      album: { name: 'Wish', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Denzel Curry Wish'),
+        spotify: 'https://open.spotify.com/search/Denzel%20Curry%20Wish'
+      }
+    },
+    {
+      id: 'light-common',
+      name: 'Light',
+      artists: [{ name: 'Common' }],
+      album: { name: 'Be', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Common Light'),
+        spotify: 'https://open.spotify.com/search/Common%20Light'
+      }
+    },
+    {
+      id: 'bullet-from-a-gun-skepta',
+      name: 'Bullet From a Gun',
+      artists: [{ name: 'Skepta' }],
+      album: { name: 'Ignorance Is Bliss', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Skepta Bullet From a Gun'),
+        spotify: 'https://open.spotify.com/search/Skepta%20Bullet%20From%20a%20Gun'
+      }
+    }
+  ];
+
+  const personaSessionTracks = [
+    {
+      id: 'persona5-beneath-the-mask',
+      name: 'Beneath the Mask',
+      artists: [{ name: 'Lyn' }],
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Beneath the Mask Persona 5'),
+        spotify: 'https://open.spotify.com/search/Beneath%20the%20Mask%20Persona%205'
+      }
+    },
+    {
+      id: 'persona5-last-surprise',
+      name: 'Last Surprise',
+      artists: [{ name: 'Lyn' }],
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Last Surprise Persona 5'),
+        spotify: 'https://open.spotify.com/search/Last%20Surprise%20Persona%205'
+      }
+    },
+    {
+      id: 'persona5-life-will-change',
+      name: 'Life Will Change',
+      artists: [{ name: 'Lyn' }],
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Life Will Change Persona 5'),
+        spotify: 'https://open.spotify.com/search/Life%20Will%20Change%20Persona%205'
+      }
+    },
+    {
+      id: 'persona5-rivers-in-the-desert',
+      name: 'Rivers in the Desert',
+      artists: [{ name: 'Lyn' }],
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Rivers in the Desert Persona 5'),
+        spotify: 'https://open.spotify.com/search/Rivers%20in%20the%20Desert%20Persona%205'
+      }
+    },
+    {
+      id: 'persona5-wake-up-get-up',
+      name: 'Wake Up, Get Up, Get Out There',
+      artists: [{ name: 'Lyn' }],
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Wake Up Get Up Get Out There Persona 5'),
+        spotify: 'https://open.spotify.com/search/Wake%20Up%20Get%20Up%20Get%20Out%20There%20Persona%205'
+      }
+    }
+  ];
+
+  const trackCache = new Map<string, any>();
+
+  async function fetchSpotifyTrack(name: string, artist: string) {
+    const key = `${name}|${artist}`.toLowerCase();
+    if (trackCache.has(key)) return trackCache.get(key);
+    const query = encodeURIComponent([name, artist].filter(Boolean).join(' '));
+    try {
+      const resp = await fetch(`/api/search?q=${query}&type=track`);
+      if (!resp.ok) return null;
+      const list = await resp.json();
+      const first = Array.isArray(list) ? list[0] : null;
+      if (first) {
+        trackCache.set(key, first);
+      }
+      return first ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function hydrateTracks(list: any[]) {
+    const hydrated = await Promise.all(
+      list.map(async (item) => {
+        const artist = item?.artists?.[0]?.name ?? '';
+        const match = await fetchSpotifyTrack(item?.name ?? '', artist);
+        if (!match) return item;
+        return {
+          ...match,
+          external_urls: {
+            ...match.external_urls,
+            youtube: item?.external_urls?.youtube
+          }
+        };
+      })
+    );
+    return hydrated;
+  }
+
+  function buildPearlMatches(count = 6, baseList = fixedMatchTracks) {
+    return Array.from({ length: count }, (_, i) => {
+      const base = baseList[i % baseList.length];
+      return { ...base, id: `${base.id}-${i + 1}` };
+    });
+  }
+
   let energy = $state(70);
   let valence = $state(65);
   let danceability = $state(70);
@@ -39,25 +185,9 @@
     isLoading = true;
     errorMsg = '';
 
-    const params = new URLSearchParams({
-      energy: String(Math.round(energy)),
-      valence: String(Math.round(valence)),
-      danceability: String(Math.round(danceability)),
-      tempo: String(Math.round(tempo)),
-      genre
-    });
-
     try {
-      const resp = await fetch(`/api/vibe?${params.toString()}`);
-      if (!resp.ok) {
-        const txt = await resp.text();
-        throw new Error(txt || 'Request failed');
-      }
-      const data = await resp.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Unexpected response');
-      }
-      tracks = data;
+      const hydrated = await hydrateTracks(fixedMatchTracks);
+      tracks = buildPearlMatches(6, hydrated);
     } catch (e) {
       console.error('matchVibe failed', e);
       errorMsg = 'Vibe Match fehlgeschlagen. Bitte erneut versuchen.' + (e instanceof Error && e.message ? ` (${e.message})` : '');
@@ -96,7 +226,8 @@
     ?? null;
 
   const getExternalUrl = (item: any) =>
-    item?.external_urls?.spotify
+    item?.external_urls?.youtube
+    ?? item?.external_urls?.spotify
     ?? item?.album?.external_urls?.spotify
     ?? item?.artists?.[0]?.external_urls?.spotify
     ?? null;
@@ -148,9 +279,9 @@
     });
   }
 
-  function startSession(from: any[] = tracks) {
-    if (!from.length) return;
-    sessionQueue = from;
+  async function startSession(from: any[] = tracks) {
+    const hydrated = await hydrateTracks(personaSessionTracks);
+    sessionQueue = hydrated;
     sessionIndex = 0;
     sessionTargets = { energy, valence, danceability, tempo, genre };
     playSessionCurrent();
