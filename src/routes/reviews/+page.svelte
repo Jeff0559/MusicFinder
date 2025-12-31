@@ -12,13 +12,16 @@
 		rating: number;
 		notes: string;
 		createdAt: string;
+		coverUrl?: string;
 	};
 
 	const albumFromReview = (review: StoredReview): SpotifyAlbum => ({
 		id: review.id,
 		name: review.album,
 		artists: [{ id: review.id, name: review.artist }],
-		images: reviewCovers[review.id] ? [{ url: reviewCovers[review.id] }] : []
+		images: (review.coverUrl || reviewCovers[review.id])
+			? [{ url: review.coverUrl || reviewCovers[review.id] }]
+			: []
 	});
 
 	let reviewedTracks: StoredReview[] = [];
@@ -77,24 +80,72 @@
 		const updates: Record<string, string> = {};
 		await Promise.all(
 			reviews.map(async (review) => {
-				const query = encodeURIComponent(
-					`${review.trackName} ${review.artist} ${review.album}`.trim()
-				);
-				try {
-					const resp = await fetch(`/api/cover?q=${query}`);
-					if (!resp.ok) return;
-					const data = await resp.json();
-					if (data?.image) {
-						updates[review.id] = data.image;
-					}
-				} catch {
-					// ignore cover fetch errors
+				const cover = await getCoverForReview(review);
+				if (cover) {
+					updates[review.id] = cover;
 				}
 			})
 		);
 		if (Object.keys(updates).length) {
 			reviewCovers = { ...reviewCovers, ...updates };
+			reviewedTracks = reviewedTracks.map((r) => ({
+				...r,
+				coverUrl: updates[r.id] ?? r.coverUrl
+			}));
 		}
+	}
+
+	async function getCoverForReview(review: StoredReview) {
+		const fetchTrackCover = async (query: string) => {
+			const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=track`);
+			if (!resp.ok) return '';
+			const list = await resp.json();
+			const track = Array.isArray(list) ? list[0] : null;
+			return track?.album?.images?.[0]?.url ?? '';
+		};
+
+		const fetchAlbumCover = async (query: string) => {
+			const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=album`);
+			if (!resp.ok) return '';
+			const list = await resp.json();
+			const album = Array.isArray(list) ? list[0] : null;
+			return album?.images?.[0]?.url ?? '';
+		};
+
+		try {
+			const trackQuery = `${review.trackName} ${review.artist}`.trim();
+			if (trackQuery) {
+				const url = await fetchTrackCover(trackQuery);
+				if (url) return url;
+			}
+
+			const albumQuery = `${review.album} ${review.artist}`.trim();
+			if (albumQuery) {
+				const url = await fetchAlbumCover(albumQuery);
+				if (url) return url;
+			}
+
+			if (review.trackName) {
+				const url = await fetchTrackCover(review.trackName);
+				if (url) return url;
+			}
+
+			if (review.album) {
+				const url = await fetchAlbumCover(review.album);
+				if (url) return url;
+			}
+
+			if (review.artist) {
+				const resp = await fetch(`/api/cover?q=${encodeURIComponent(review.artist)}`);
+				if (resp.ok) {
+					const data = await resp.json();
+					if (data?.image) return data.image as string;
+				}
+			}
+		} catch {
+			// ignore cover errors
+		}
+		return '';
 	}
 
 	function handleAddReview() {
@@ -151,6 +202,7 @@
 			if (data?.review) {
 				reviewedTracks = [data.review, ...reviewedTracks];
 				selectedAlbum = data.review;
+				await loadReviewCovers([data.review]);
 			}
 			handleCloseReview();
 		} catch (err) {
@@ -224,10 +276,10 @@
 					<div class="review-card">
 						<div class="review-header">
 							<div class="review-cover">
-								{#if reviewCovers[track.id]}
-									<img src={reviewCovers[track.id]} alt={track.album} loading="lazy" />
+								{#if track.coverUrl || reviewCovers[track.id]}
+									<img src={track.coverUrl || reviewCovers[track.id]} alt={track.album} loading="lazy" />
 								{:else}
-									<div class="cover-placeholder">No Image</div>
+									<img src="/fallback-cover.png" alt={track.album} loading="lazy" />
 								{/if}
 							</div>
 							<div class="review-info">

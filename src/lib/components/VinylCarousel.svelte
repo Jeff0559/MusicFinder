@@ -29,14 +29,19 @@
   .carousel::-webkit-scrollbar { display: none; }
 
   .vinyl {
-    width: 150px;
-    height: 150px;
+    width: 140px;
+    aspect-ratio: 1 / 1;
+    height: auto;
     padding: 0;
     border: none;
     background: none;
     cursor: pointer;
     scroll-snap-align: center;
     perspective: 800px;
+    transition: transform 140ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .vinyl:focus-visible {
@@ -83,6 +88,9 @@
   .vinyl:hover .disc {
     transform: rotateY(-22deg) rotateX(12deg) scale(1.12);
     box-shadow: 0 16px 32px rgba(0,0,0,0.75);
+  }
+  .vinyl:hover {
+    transform: translateY(-3px);
   }
 
   .cover {

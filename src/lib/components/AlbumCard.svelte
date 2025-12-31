@@ -4,18 +4,14 @@
 	export let album: SpotifyAlbum;
 	export let onViewDetails: (() => void) | undefined = undefined;
 
-	const imageUrl = album.images?.[0]?.url;
+	const imageUrl = album.images?.[0]?.url ?? '/fallback-cover.png';
 	const yearFromDate = album.release_date ? new Date(album.release_date).getFullYear() : null;
 	const firstArtist = album.artists?.[0]?.name ?? 'Unknown Artist';
 </script>
 
 <button class="album-card" type="button" onclick={() => onViewDetails?.()}>
 	<div class="album-cover">
-		{#if imageUrl}
-			<img src={imageUrl} alt={album.name} loading="lazy" />
-		{:else}
-			<div class="no-image">No Image</div>
-		{/if}
+		<img src={imageUrl} alt={album.name} loading="lazy" />
 	</div>
 	<div class="album-info">
 		<h4 class="album-name">{album.name}</h4>
@@ -68,10 +64,6 @@
 		object-fit: cover;
 	}
 
-	.no-image {
-		color: #8aa0b2;
-		font-size: 0.875rem;
-	}
 
 	.album-info {
 		padding: 0 0.5rem;

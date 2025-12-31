@@ -6,9 +6,9 @@
     </div>
 
     <ul class="navbar-menu">
-      <li><a href="/" aria-current="page">Home</a></li>
-      <li><a href="/search">Search</a></li>
-      <li><a href="/reviews">Reviews & Albums</a></li>
+      <li><a href="/" aria-current="page">Start</a></li>
+      <li><a href="/search">Suche</a></li>
+      <li><a href="/reviews">Reviews & Alben</a></li>
       <li><a href="/vibe">Vibe Matcher</a></li>
     </ul>
   </div>

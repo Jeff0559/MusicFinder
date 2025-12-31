@@ -1,38 +1,57 @@
 ﻿<script lang="ts">
   export let title: string;
   export let items: { image: string; name: string; meta: string }[] = [];
-  let container: HTMLDivElement | null = null;
-
-  function scrollLeft() {
-    container?.scrollBy?.({ left: -300, behavior: 'smooth' });
-  }
-  function scrollRight() {
-    container?.scrollBy?.({ left: 300, behavior: 'smooth' });
-  }
+  export let loading = false;
+  export let error = '';
+  export let emptyMessage = 'Keine Trending-Daten gefunden.';
+  export let canPrev = false;
+  export let canNext = false;
+  export let onPrev: (() => void) | null = null;
+  export let onNext: (() => void) | null = null;
+  export let onRetry: (() => void) | null = null;
 </script>
 
 <section class="block">
   <div class="header">
     <h2 class="title">{title}</h2>
     <div class="actions">
-      <button class="scroll-btn left" onclick={scrollLeft} aria-label="Scroll left">Prev</button>
-      <button class="scroll-btn right" onclick={scrollRight} aria-label="Scroll right">Next</button>
+      <button class="scroll-btn" onclick={() => onPrev?.()} aria-label="Prev" disabled={!canPrev}>Prev</button>
+      <button class="scroll-btn" onclick={() => onNext?.()} aria-label="Next" disabled={!canNext}>Next</button>
     </div>
   </div>
 
-  <div bind:this={container} class="track-list">
-    {#if items.length === 0}
-      <div class="text-muted">Loading trending items...</div>
-    {:else}
+  {#if error}
+    <div class="state">
+      <p class="state-text">{error}</p>
+      {#if onRetry}
+        <button class="retry-btn" onclick={() => onRetry?.()}>Retry</button>
+      {/if}
+    </div>
+  {:else if loading}
+    <div class="skeleton-grid">
+      {#each Array(6) as _}
+        <div class="skeleton-card">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line"></div>
+        </div>
+      {/each}
+    </div>
+  {:else if !items.length}
+    <div class="state">
+      <p class="state-text">{emptyMessage}</p>
+    </div>
+  {:else}
+    <div class="grid">
       {#each items as item}
         <div class="card">
-          <img src={item.image} class="thumb" alt={item.name} />
+          <img src={item.image || '/fallback-cover.png'} class="thumb" alt={item.name} />
           <p class="name">{item.name}</p>
           <p class="meta">{item.meta}</p>
         </div>
       {/each}
-    {/if}
-  </div>
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -67,27 +86,58 @@
     border:1px solid rgba(255,255,255,0.08);
     transition: 140ms ease;
   }
+  .scroll-btn:disabled{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
   .scroll-btn:hover{
     background: var(--accent-primary);
     color:#0a1014;
     border-color: transparent;
     box-shadow: 0 6px 16px rgba(56, 224, 127, 0.2);
   }
-  .track-list{
-    display:flex;
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap:16px;
-    overflow-x:auto;
-    padding:8px 4px 12px;
-    scroll-snap-type:x mandatory;
   }
-  .track-list::-webkit-scrollbar{ display:none; }
+  .skeleton-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap:16px;
+  }
+  .skeleton-card{
+    border-radius:14px;
+    padding:12px;
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .skeleton-thumb{
+    width:100%;
+    height:128px;
+    border-radius:10px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+    background-size: 200% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+  .skeleton-line{
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+    background-size: 200% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+  .skeleton-line.short{
+    width:70%;
+  }
   .card{
     background: rgba(255,255,255,0.03);
     border:1px solid rgba(255,255,255,0.08);
-    min-width:180px;
     border-radius:14px;
     padding:12px;
-    scroll-snap-align:start;
     transition: transform 150ms ease, border 150ms ease;
   }
   .card:hover{
@@ -112,7 +162,32 @@
     font-size:13px;
     margin:0;
   }
+  .state{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 0;
+  }
+  .state-text{
+    color:var(--text-secondary);
+    margin:0;
+    font-size:14px;
+  }
+  .retry-btn{
+    background: var(--accent-secondary);
+    color:#0a1014;
+    border:none;
+    border-radius:999px;
+    padding:6px 12px;
+    cursor:pointer;
+    font-weight:600;
+  }
   .text-muted{
     color:var(--text-muted);
+  }
+  @keyframes shimmer{
+    0%{ background-position: 0% 50%; }
+    100%{ background-position: 200% 50%; }
   }
 </style>

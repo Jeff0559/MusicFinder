@@ -1,6 +1,5 @@
 ﻿<script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import TrendingBlock from './TrendingBlock.svelte';
   import VinylCarousel from '$lib/components/VinylCarousel.svelte';
   import { recent } from '$lib/stores/recent';
 
@@ -83,15 +82,7 @@
   }
 
   onMount(async () => {
-    try {
-      const resp = await fetch('/api/trending');
-      const data = await resp.json();
-      trendingAlbums = data.albums ?? [];
-      trendingArtists = data.artists ?? [];
-      loadVinylImages();
-    } catch (e) {
-      console.error('Trending failed:', e);
-    }
+    loadVinylImages();
   });
 
   async function loadVinylImages() {
@@ -106,19 +97,8 @@
       })
     );
   }
-</script>
 
-<header class="topbar">
-  <div class="brand">
-    <img class="brand-gif" src="/lofi.gif" alt="Lofi animation" />
-    <span class="brand-name">MusicFinder</span>
-  </div>
-  <nav class="nav">
-    <a href="/" aria-current="page">Home</a>
-    <a href="/search">Suche</a>
-    <a href="/scoreboard">Scoreboard</a>
-  </nav>
-</header>
+</script>
 
 <section class="hero">
   <div class="hero-inner">
@@ -138,6 +118,7 @@
       </div>
 
       <div class="tabs">
+        <span class="tabs-label">Suchtyp</span>
         <label class="tab">
           <input bind:group={type} value="track" type="radio" />
           <span>Tracks</span>
@@ -152,35 +133,16 @@
         </label>
       </div>
 
-      <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(true); }} />
+      <div class="vinyl-section">
+        <h3>Empfohlene Vinyls</h3>
+        <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(true); }} />
+      </div>
     </div>
   </div>
 </section>
 
 <main class="container">
   <div class="discover-section">
-
-    <div class="trending-section">
-      <TrendingBlock
-        title="Trending Alben"
-        items={trendingAlbums.map(a => ({
-          image: a.images?.[0]?.url ?? '',
-          name: a.name,
-          meta: a.artists?.[0]?.name ?? ''
-        }))}
-      />
-    </div>
-
-    <div class="trending-section">
-      <TrendingBlock
-        title="Beliebte Artists"
-        items={trendingArtists.map(a => ({
-          image: a.images?.[0]?.url ?? '',
-          name: a.name,
-          meta: a.genres?.[0] ?? ''
-        }))}
-      />
-    </div>
 
     <section class="mood-tags">
       {#each ['Pop','Chill','Focus','Workout','Party','EDM','Jazz','Rock','Piano','Sleep','Roadtrip','Gaming'] as g}
@@ -283,65 +245,6 @@
     box-sizing: border-box;
   }
 
-  .topbar{
-    position:sticky;
-    top:0;
-    display:flex;
-    justify-content:space-between;
-    padding:var(--space-m) var(--space-l);
-    background: rgba(10, 12, 16, 0.8);
-    backdrop-filter: blur(8px);
-    border-bottom:1px solid rgba(255,255,255,0.05);
-    z-index:20;
-  }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .brand-gif{
-    width:42px;
-    height:42px;
-    border-radius:12px;
-    object-fit:cover;
-    border:1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 8px 18px rgba(5, 10, 16, 0.45);
-  }
-  .brand-name{
-    font-weight:600;
-    letter-spacing:0.3px;
-    color:var(--text-primary);
-  }
-  .nav a{
-    position:relative;
-    color:var(--text-secondary);
-    margin-left:var(--space-m);
-    text-decoration:none;
-    padding:var(--space-s) var(--space-m);
-    border-radius: var(--radius-pill);
-    transition: color 120ms ease, background 120ms ease;
-  }
-  .nav a[aria-current="page"]{
-    color:var(--text-primary);
-  }
-  .nav a::after{
-    content:'';
-    position:absolute;
-    left:14px;
-    right:14px;
-    bottom:6px;
-    height:2px;
-    background: var(--accent-primary);
-    opacity:0;
-    transform:scaleX(0.6);
-    transition: opacity 140ms ease, transform 140ms ease;
-  }
-  .nav a[aria-current="page"]::after{
-    opacity:1;
-    transform:scaleX(1);
-  }
-  .nav a:hover{ color:var(--accent-primary); }
-
   .hero{
     width:100%;
     padding:var(--space-xl) 0 var(--space-l);
@@ -407,15 +310,16 @@
     flex-direction:column;
     align-items:center;
     gap:var(--space-m);
+    margin-top: var(--space-l);
   }
   .searchbox{
     display:flex;
     width:100%;
     max-width:720px;
-    background: linear-gradient(135deg, rgba(27, 33, 41, 0.9), rgba(21, 26, 32, 0.9));
+    background: linear-gradient(135deg, rgba(32, 40, 50, 0.95), rgba(18, 22, 28, 0.95));
     padding:var(--space-s);
     border-radius: var(--radius-m);
-    border:1px solid rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.14);
     box-shadow: var(--shadow-soft);
     gap: var(--space-s);
     transition: border 140ms ease, box-shadow 140ms ease;
@@ -432,6 +336,7 @@
     font-size:16px;
     outline:none;
     padding: var(--space-s);
+    border-radius: var(--radius-s);
   }
   .searchbox input::placeholder{
     color:var(--text-muted);
@@ -450,7 +355,8 @@
     box-shadow: 0 8px 20px rgba(56, 224, 127, 0.28);
   }
   .search-btn:hover{
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 10px 26px rgba(56, 224, 127, 0.35);
   }
   .search-btn:disabled{
     opacity:0.6;
@@ -462,6 +368,14 @@
     gap:var(--space-s);
     color:var(--text-secondary);
     flex-wrap:wrap;
+    align-items:center;
+  }
+  .tabs-label{
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 4px;
   }
   .tabs .tab{
     cursor:pointer;
@@ -478,12 +392,30 @@
     background: var(--bg-glass);
     transition: 140ms ease;
     font-weight:500;
+    color: var(--text-muted);
   }
   .tabs input:checked + span{
     background: var(--accent-info);
     color:#0a1014;
     border-color: transparent;
     box-shadow: 0 6px 16px rgba(76, 201, 240, 0.3);
+    transform: scale(1.04);
+  }
+  .tabs input:not(:checked) + span:hover{
+    color: var(--text-secondary);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  .vinyl-section{
+    margin-top: var(--space-l);
+    width: 100%;
+  }
+  .vinyl-section h3{
+    margin: 0 0 var(--space-s) 0;
+    font-size: 16px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .container{
@@ -492,13 +424,13 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:var(--space-l);
+    gap:calc(var(--space-l) + 8px);
   }
 
   .discover-section{
     display:flex;
     flex-direction:column;
-    gap:24px;
+    gap:32px;
     width:100%;
     max-width:1200px;
     margin:0 auto;
@@ -507,7 +439,7 @@
 
   .trending-section{
     background: linear-gradient(160deg, rgba(27, 33, 41, 0.9), rgba(18, 22, 28, 0.9));
-    padding:16px 20px;
+    padding:14px 16px;
     border-radius:16px;
     box-shadow: var(--shadow-card);
     border: 1px solid rgba(255,255,255,0.05);
