@@ -1,10 +1,10 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import type { SpotifyAlbum } from '$lib/types';
 
 	export let album: SpotifyAlbum;
 	export let onViewDetails: (() => void) | undefined = undefined;
 
-	const imageUrl = album.images?.[0]?.url ?? '/fallback-cover.png';
+	const imageUrl = album.images?.[0]?.url ?? '/fallback-cover.svg';
 	const yearFromDate = album.release_date ? new Date(album.release_date).getFullYear() : null;
 	const firstArtist = album.artists?.[0]?.name ?? 'Unknown Artist';
 </script>
@@ -97,3 +97,4 @@
 		color: #627286;
 	}
 </style>
+

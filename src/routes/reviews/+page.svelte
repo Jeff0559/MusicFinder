@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { onMount } from 'svelte';
 	import AlbumCard from '$lib/components/AlbumCard.svelte';
 	import RatingStars from '$lib/components/RatingStars.svelte';
@@ -176,7 +176,7 @@
 		if (saving) return;
 
 		if (!newReview.trackName.trim() || !newReview.artist.trim() || !newReview.album.trim()) {
-			error = 'Bitte Track, Artist und Album ausfüllen.';
+			error = 'Bitte Track, Artist und Album ausfÃ¼llen.';
 			return;
 		}
 
@@ -236,7 +236,7 @@
 			}
 		} catch (err) {
 			console.error('deleteReview failed', err);
-			error = 'Review konnte nicht gelöscht werden.';
+			error = 'Review konnte nicht gelÃ¶scht werden.';
 		} finally {
 			deletingId = null;
 		}
@@ -279,7 +279,7 @@
 								{#if track.coverUrl || reviewCovers[track.id]}
 									<img src={track.coverUrl || reviewCovers[track.id]} alt={track.album} loading="lazy" />
 								{:else}
-									<img src="/fallback-cover.png" alt={track.album} loading="lazy" />
+									<img src="/fallback-cover.svg" alt={track.album} loading="lazy" />
 								{/if}
 							</div>
 							<div class="review-info">
@@ -952,3 +952,4 @@
 		}
 	}
 </style>
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onDestroy } from 'svelte';
   import VibeBar from '$lib/components/VibeBar.svelte';
   import { currentAudio, currentPreview, playPreview as startPreview, stopPreview } from '$lib/stores/audio';
@@ -27,7 +27,7 @@
     id: 'pearl-shade',
     name: 'Pearl',
     artists: [{ name: 'Shade' }],
-    album: { name: 'Pearl', images: [{ url: '/fallback-cover.png' }] },
+    album: { name: 'Pearl', images: [{ url: '/fallback-cover.svg' }] },
     external_urls: {
       youtube: youtubeSearchUrl('Shade Pearl'),
       spotify: 'https://open.spotify.com/search/Pearl%20Shade'
@@ -40,7 +40,7 @@
       id: 'wish-denzel-curry',
       name: 'Wish',
       artists: [{ name: 'Denzel Curry' }],
-      album: { name: 'Wish', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Wish', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Denzel Curry Wish'),
         spotify: 'https://open.spotify.com/search/Denzel%20Curry%20Wish'
@@ -50,7 +50,7 @@
       id: 'light-common',
       name: 'Light',
       artists: [{ name: 'Common' }],
-      album: { name: 'Be', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Be', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Common Light'),
         spotify: 'https://open.spotify.com/search/Common%20Light'
@@ -60,7 +60,7 @@
       id: 'bullet-from-a-gun-skepta',
       name: 'Bullet From a Gun',
       artists: [{ name: 'Skepta' }],
-      album: { name: 'Ignorance Is Bliss', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Ignorance Is Bliss', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Skepta Bullet From a Gun'),
         spotify: 'https://open.spotify.com/search/Skepta%20Bullet%20From%20a%20Gun'
@@ -73,7 +73,7 @@
       id: 'persona5-beneath-the-mask',
       name: 'Beneath the Mask',
       artists: [{ name: 'Lyn' }],
-      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Beneath the Mask Persona 5'),
         spotify: 'https://open.spotify.com/search/Beneath%20the%20Mask%20Persona%205'
@@ -83,7 +83,7 @@
       id: 'persona5-last-surprise',
       name: 'Last Surprise',
       artists: [{ name: 'Lyn' }],
-      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Last Surprise Persona 5'),
         spotify: 'https://open.spotify.com/search/Last%20Surprise%20Persona%205'
@@ -93,7 +93,7 @@
       id: 'persona5-life-will-change',
       name: 'Life Will Change',
       artists: [{ name: 'Lyn' }],
-      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Life Will Change Persona 5'),
         spotify: 'https://open.spotify.com/search/Life%20Will%20Change%20Persona%205'
@@ -103,7 +103,7 @@
       id: 'persona5-rivers-in-the-desert',
       name: 'Rivers in the Desert',
       artists: [{ name: 'Lyn' }],
-      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Rivers in the Desert Persona 5'),
         spotify: 'https://open.spotify.com/search/Rivers%20in%20the%20Desert%20Persona%205'
@@ -113,7 +113,7 @@
       id: 'persona5-wake-up-get-up',
       name: 'Wake Up, Get Up, Get Out There',
       artists: [{ name: 'Lyn' }],
-      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.png' }] },
+      album: { name: 'Persona 5', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
         youtube: youtubeSearchUrl('Wake Up Get Up Get Out There Persona 5'),
         spotify: 'https://open.spotify.com/search/Wake%20Up%20Get%20Up%20Get%20Out%20There%20Persona%205'
@@ -808,3 +808,4 @@
     }
   }
 </style>
+

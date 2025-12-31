@@ -89,9 +89,9 @@
       recentTerms.slice(-10).map(async (term) => {
         try {
           const r = await fetch(`/api/cover?q=${encodeURIComponent(term)}`).then(r => r.json());
-          return { label: term, image: r.image || '/fallback-cover.png' };
+          return { label: term, image: r.image || '/fallback-cover.svg' };
         } catch (e) {
-          return { label: term, image: '/fallback-cover.png' };
+          return { label: term, image: '/fallback-cover.svg' };
         }
       })
     );
@@ -607,3 +607,4 @@
     }
   }
 </style>
+

@@ -10,7 +10,7 @@
         <div class="disc">
           <div
             class="cover"
-            style={`background-image: url('${item.image || "/fallback-cover.png"}')`}
+            style={`background-image: url('${item.image || "/fallback-cover.svg"}')`}
           ></div>
         </div>
       </button>
@@ -143,3 +143,4 @@
     overflow: hidden;
   }
 </style>
+

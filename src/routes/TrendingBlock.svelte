@@ -45,7 +45,7 @@
     <div class="grid">
       {#each items as item}
         <div class="card">
-          <img src={item.image || '/fallback-cover.png'} class="thumb" alt={item.name} />
+          <img src={item.image || '/fallback-cover.svg'} class="thumb" alt={item.name} />
           <p class="name">{item.name}</p>
           <p class="meta">{item.meta}</p>
         </div>
@@ -191,3 +191,4 @@
     100%{ background-position: 200% 50%; }
   }
 </style>
+

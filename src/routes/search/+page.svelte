@@ -24,6 +24,7 @@
   let ytLoading = $state(false);
   let youtubeTitle: string = $state('');
   let currentPreviewUrl: string | null = $state(null);
+  let currentPreviewMeta: { name?: string; artists?: string[]; albumImage?: string | null } | null = $state(null);
   let isPlaying = $state(false);
   let scoreLoadingId: string | null = $state(null);
   let vibeMatches: any[] = $state([]);
@@ -78,7 +79,6 @@
             ?? [];
 
       results = list;
-      recent.add(searchQuery);
       if (searchType === 'track') {
         lastAutoScoreId = null;
         enrichGenres(list);
@@ -505,6 +505,9 @@
 
   const unsubPreview = currentPreview.subscribe((preview) => {
     currentPreviewUrl = preview?.previewUrl ?? null;
+    currentPreviewMeta = preview
+      ? { name: preview.name, artists: preview.artists, albumImage: preview.albumImage }
+      : null;
   });
 
   onDestroy(() => {
@@ -543,10 +546,25 @@
       Auto Score & Match nach der Suche (erstes Ergebnis)
     </label>
 
-    {#if errorMsg}
+  {#if errorMsg}
       <p class="error">{errorMsg}</p>
     {/if}
   </section>
+
+  {#if currentPreviewMeta}
+    <section class="mini-player">
+      <div class="mini-cover">
+        <img src={currentPreviewMeta.albumImage || '/fallback-cover.svg'} alt="Now playing cover" />
+      </div>
+      <div class="mini-info">
+        <div class="mini-title">{currentPreviewMeta.name ?? 'Now Playing'}</div>
+        <div class="mini-sub">{(currentPreviewMeta.artists ?? []).join(', ')}</div>
+      </div>
+      <div class="mini-actions">
+        <button class="btn secondary" onclick={stopPreview}>Stop</button>
+      </div>
+    </section>
+  {/if}
 
   <section class="hero" style={heroImage ? `background-image: linear-gradient(180deg, rgba(20,20,20,0.6), rgba(20,20,20,0.9)), url(${heroImage})` : ''}>
     <div class="hero-content">
@@ -644,7 +662,7 @@
               <button class="btn primary is-play" onclick={() => handlePreview(track)}>
                 {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              <a class="btn secondary" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Open</a>
+                <a class="btn secondary is-open" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Details</a>
               </div>
             </div>
           {/each}
@@ -721,8 +739,8 @@
               <button class="btn primary is-play" onclick={() => handlePreview(match)}>
                 {getPreviewUrl(match) ? (currentPreviewUrl === getPreviewUrl(match) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              <a class="btn secondary" href={getExternalUrl(match) ?? '#'} target="_blank" rel="noreferrer">
-                Open
+              <a class="btn secondary is-open" href={getExternalUrl(match) ?? '#'} target="_blank" rel="noreferrer">
+                Details
               </a>
             </div>
           </div>
@@ -889,6 +907,11 @@
   .btn.is-play:hover {
     transform: translateY(-1px) scale(1.02);
   }
+  .btn.is-open::before {
+    content: 'i';
+    display: inline-block;
+    margin-right: 6px;
+  }
   .btn.primary {
     background: linear-gradient(135deg, #00e676, #42a5f5);
     color: #0f0f0f;
@@ -902,6 +925,53 @@
     background: transparent;
     color: #bdbdbd;
     border: 1px dashed #3a3a3a;
+  }
+
+  .mini-player {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    background: #1a1f26;
+    border: 1px solid #2b323c;
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  }
+  .mini-cover {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #10141b;
+    border: 1px solid #2b323c;
+  }
+  .mini-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mini-info {
+    min-width: 0;
+  }
+  .mini-title {
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mini-sub {
+    color: #9fb0c6;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mini-actions {
+    display: flex;
+    gap: 8px;
   }
 
   .hero {
@@ -1252,6 +1322,14 @@
       grid-column: 1 / -1;
       justify-content: flex-start;
       flex-wrap: wrap;
+    }
+    .mini-player {
+      grid-template-columns: 48px 1fr;
+      grid-template-rows: auto auto;
+    }
+    .mini-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
     }
   }
 </style>
