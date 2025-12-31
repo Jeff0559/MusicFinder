@@ -1,3 +1,9 @@
+<script>
+  import { page } from '$app/stores';
+
+  const isActive = (path) => $page.url.pathname === path;
+</script>
+
 <nav class="navbar">
   <div class="navbar-container">
     <div class="navbar-brand">
@@ -6,10 +12,10 @@
     </div>
 
     <ul class="navbar-menu">
-      <li><a href="/" aria-current="page">Start</a></li>
-      <li><a href="/search">Suche</a></li>
-      <li><a href="/reviews">Reviews & Alben</a></li>
-      <li><a href="/vibe">Vibe Matcher</a></li>
+      <li><a href="/" aria-current={isActive('/') ? 'page' : undefined}>Start</a></li>
+      <li><a href="/search" aria-current={isActive('/search') ? 'page' : undefined}>Suche</a></li>
+      <li><a href="/reviews" aria-current={isActive('/reviews') ? 'page' : undefined}>Reviews & Alben</a></li>
+      <li><a href="/vibe" aria-current={isActive('/vibe') ? 'page' : undefined}>Vibe Matcher</a></li>
     </ul>
   </div>
 </nav>

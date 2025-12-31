@@ -5,14 +5,17 @@
 
 <div class="carousel">
   {#each items as item}
-    <button class="vinyl" on:click={() => onSelect(item.label)} aria-label={`Search ${item.label}`}>
-      <div class="disc">
-        <div
-          class="cover"
-          style={`background-image: url('${item.image || "/fallback-cover.png"}')`}
-        ></div>
-      </div>
-    </button>
+    <div class="vinyl-item">
+      <button class="vinyl" on:click={() => onSelect(item.label)} aria-label={`Search ${item.label}`}>
+        <div class="disc">
+          <div
+            class="cover"
+            style={`background-image: url('${item.image || "/fallback-cover.png"}')`}
+          ></div>
+        </div>
+      </button>
+      <div class="vinyl-label" title={item.label}>{item.label}</div>
+    </div>
   {/each}
 </div>
 
@@ -27,6 +30,14 @@
   }
 
   .carousel::-webkit-scrollbar { display: none; }
+
+  .vinyl-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+  }
 
   .vinyl {
     width: 140px;
@@ -118,5 +129,17 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .vinyl-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-width: 140px;
+    text-align: center;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 </style>

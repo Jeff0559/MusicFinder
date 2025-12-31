@@ -276,6 +276,7 @@
         ? genrePixelMap[genreTag]
         : getImage(item) || null;
 
+    recent.add(getTitle(item));
     startPreview(previewUrl, {
       id: item?.id ?? item?.uri,
       name: getTitle(item),
@@ -372,6 +373,7 @@
     youtubeId = null;
     youtubeTitle = getTitle(item);
     errorMsg = '';
+    recent.add(getTitle(item));
 
     const artist = item?.artists?.[0]?.name ?? '';
     const query = [getTitle(item), artist, 'official audio'].filter(Boolean).join(' ');
@@ -553,7 +555,7 @@
       <p class="subtitle">{heroTrack ? getSubtitle(heroTrack) : 'Tippe einen Begriff ein, wir spielen sofort los.'}</p>
       <div class="hero-actions">
         {#if heroTrack}
-          <button class="btn primary" onclick={() => handlePreview(heroTrack)}>
+          <button class="btn primary is-play" onclick={() => handlePreview(heroTrack)}>
             {getPreviewUrl(heroTrack) ? (currentPreviewUrl === getPreviewUrl(heroTrack) && isPlaying ? 'Pause' : 'Play first') : 'Play on YouTube'}
           </button>
           {#if heroIsTrack}
@@ -639,10 +641,10 @@
                     {/if}
                   </div>
                 {/if}
-                <button class="btn ghost" onclick={() => handlePreview(track)}>
-                  {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
-                </button>
-                <a class="btn secondary" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Open</a>
+              <button class="btn primary is-play" onclick={() => handlePreview(track)}>
+                {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
+              </button>
+              <a class="btn secondary" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Open</a>
               </div>
             </div>
           {/each}
@@ -664,14 +666,14 @@
     {:else}
       <div class="tracklist">
         {#each uniqueResults.slice(0, 12) as item, idx (item.id ?? item.uri ?? item.name)}
-          <div class="track-row">
+          <div class="track-row" class:playing={getPreviewUrl(item) && currentPreviewUrl === getPreviewUrl(item) && isPlaying}>
             <div class="track-num">{idx + 1}</div>
             <div class="track-main">
               <div class="track-title">{getTitle(item)}</div>
               <div class="track-sub">{getSubtitle(item)}</div>
             </div>
             <div class="track-actions">
-              <button class="btn ghost" onclick={() => handlePreview(item)}>
+              <button class="btn primary is-play" onclick={() => handlePreview(item)}>
                 {getPreviewUrl(item) ? (currentPreviewUrl === getPreviewUrl(item) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
               {#if searchType === 'album'}
@@ -716,7 +718,7 @@
               <div class="vibe-sub">{getSubtitle(match)}</div>
             </div>
             <div class="vibe-actions">
-              <button class="btn ghost" onclick={() => handlePreview(match)}>
+              <button class="btn primary is-play" onclick={() => handlePreview(match)}>
                 {getPreviewUrl(match) ? (currentPreviewUrl === getPreviewUrl(match) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
               <a class="btn secondary" href={getExternalUrl(match) ?? '#'} target="_blank" rel="noreferrer">
@@ -821,7 +823,7 @@
 
   .search-input {
     width: 100%;
-    padding: 12px 42px 12px 12px;
+    padding: 14px 44px 14px 14px;
     border-radius: 12px;
     border: 1px solid #2c2c2c;
     background: #0f0f0f;
@@ -875,12 +877,18 @@
   .btn {
     border: none;
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 12px 16px;
     font-weight: 700;
     cursor: pointer;
     transition: transform 120ms ease, opacity 120ms ease;
   }
   .btn:active { transform: translateY(1px); }
+  .btn.is-play {
+    box-shadow: 0 10px 24px rgba(0, 230, 118, 0.25);
+  }
+  .btn.is-play:hover {
+    transform: translateY(-1px) scale(1.02);
+  }
   .btn.primary {
     background: linear-gradient(135deg, #00e676, #42a5f5);
     color: #0f0f0f;
@@ -988,7 +996,17 @@
     align-items: center;
     padding: 10px 12px;
     border-radius: 12px;
-    background: #2c2c2c;
+    background: #20252d;
+    border: 1px solid #2c2c2c;
+    transition: border 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  }
+  .track-row:hover {
+    border-color: rgba(56, 224, 127, 0.5);
+    transform: translateY(-1px);
+  }
+  .track-row.playing {
+    border-color: #3de074;
+    box-shadow: 0 0 0 2px rgba(61, 224, 116, 0.2);
   }
 
   .track-num {
@@ -1004,6 +1022,7 @@
     color: #ffffff;
     font-weight: 700;
     margin: 0;
+    font-size: 15px;
   }
 
   .track-sub {

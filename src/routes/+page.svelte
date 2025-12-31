@@ -45,7 +45,7 @@
   const unsub = recent.subscribe(v => (recentTerms = v));
   onDestroy(() => unsub());
 
-  async function goSearch(addRecent = false) {
+  async function goSearch() {
     if (!query.trim()) return;
     searchLoading = true;
     searchError = '';
@@ -67,7 +67,6 @@
             ?? data?.artists?.items
             ?? [];
       searchResults = list;
-      if (addRecent) recent.add(query);
     } catch (e) {
       console.error('Home search failed', e);
       searchError = 'Suche fehlgeschlagen. Bitte erneut versuchen.';
@@ -78,7 +77,7 @@
 
   function useTerm(term: string) {
     query = term;
-    goSearch(true);
+    goSearch();
   }
 
   onMount(async () => {
@@ -110,7 +109,7 @@
         <input
           bind:value={query}
           placeholder="Suche nach Song, Artist oder Album"
-          onkeydown={(e)=> e.key === 'Enter' && goSearch(true)}
+          onkeydown={(e)=> e.key === 'Enter' && goSearch()}
         />
         <button class="search-btn" onclick={() => goSearch(false)} disabled={searchLoading}>
           {searchLoading ? 'Suche...' : 'Suchen'}
@@ -135,7 +134,7 @@
 
       <div class="vinyl-section">
         <h3>Empfohlene Vinyls</h3>
-        <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(true); }} />
+      <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(); }} />
       </div>
     </div>
   </div>
