@@ -14,6 +14,123 @@
     { title: 'Late Night Drive', subtitle: 'Cinematic', color: '#26C6DA' }
   ];
 
+  const youtubeSearchUrl = (query: string) =>
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+
+  const fixedMatchTracks = [
+    {
+      id: 'pearl-shade',
+      name: 'Pearl',
+      artists: [{ name: 'Sade' }],
+      album: { name: 'Pearl', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Sade Pearl'),
+        spotify: 'https://open.spotify.com/search/Pearl%20Sade'
+      }
+    },
+    {
+      id: 'no-church-in-the-wild',
+      name: 'No Church in the Wild',
+      artists: [{ name: 'Jay-Z & Kanye West' }, { name: 'Frank Ocean' }],
+      album: { name: 'Watch the Throne', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('No Church in the Wild Jay-Z Kanye West Frank Ocean'),
+        spotify: 'https://open.spotify.com/search/No%20Church%20in%20the%20Wild'
+      }
+    },
+    {
+      id: 'light-common',
+      name: 'Light',
+      artists: [{ name: 'Common' }],
+      album: { name: 'Be', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Common Light'),
+        spotify: 'https://open.spotify.com/search/Common%20Light'
+      }
+    },
+    {
+      id: '03-adolescence',
+      name: '03 Adolescence',
+      artists: [{ name: 'J. Cole' }],
+      album: { name: '2014 Forest Hills Drive', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('03 Adolescence J. Cole'),
+        spotify: 'https://open.spotify.com/search/03%20Adolescence%20J.%20Cole'
+      }
+    },
+    {
+      id: 'blinding-lights',
+      name: 'Blinding Lights',
+      artists: [{ name: 'The Weeknd' }],
+      album: { name: 'After Hours', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('The Weeknd Blinding Lights'),
+        spotify: 'https://open.spotify.com/search/Blinding%20Lights%20The%20Weeknd'
+      }
+    },
+    {
+      id: 'strobe',
+      name: 'Strobe',
+      artists: [{ name: 'deadmau5' }],
+      album: { name: 'For Lack of a Better Name', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('deadmau5 Strobe'),
+        spotify: 'https://open.spotify.com/search/deadmau5%20Strobe'
+      }
+    },
+    {
+      id: 'so-what',
+      name: 'So What',
+      artists: [{ name: 'Miles Davis' }],
+      album: { name: 'Kind of Blue', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Miles Davis So What'),
+        spotify: 'https://open.spotify.com/search/Miles%20Davis%20So%20What'
+      }
+    },
+    {
+      id: 'time',
+      name: 'Time',
+      artists: [{ name: 'Pink Floyd' }],
+      album: { name: 'The Dark Side of the Moon', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Pink Floyd Time'),
+        spotify: 'https://open.spotify.com/search/Pink%20Floyd%20Time'
+      }
+    },
+    {
+      id: 'get-lucky',
+      name: 'Get Lucky',
+      artists: [{ name: 'Daft Punk' }, { name: 'Pharrell Williams' }],
+      album: { name: 'Random Access Memories', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Daft Punk Get Lucky'),
+        spotify: 'https://open.spotify.com/search/Get%20Lucky%20Daft%20Punk'
+      }
+    },
+    {
+      id: 'redbone',
+      name: 'Redbone',
+      artists: [{ name: 'Childish Gambino' }],
+      album: { name: 'Awaken, My Love!', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Childish Gambino Redbone'),
+        spotify: 'https://open.spotify.com/search/Redbone%20Childish%20Gambino'
+      }
+    },
+    {
+      id: 'humble',
+      name: 'HUMBLE.',
+      artists: [{ name: 'Kendrick Lamar' }],
+      album: { name: 'DAMN.', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Kendrick Lamar HUMBLE'),
+        spotify: 'https://open.spotify.com/search/HUMBLE%20Kendrick%20Lamar'
+      }
+    }
+  ];
+
+  const trackCache = new Map<string, any>();
   let searchQuery = $state('');
   let searchType: 'track' | 'album' | 'artist' = $state('track');
   let results: any[] = $state([]);
@@ -28,6 +145,9 @@
   let isPlaying = $state(false);
   let scoreLoadingId: string | null = $state(null);
   let vibeMatches: any[] = $state([]);
+  let artistTopTracks: any[] = $state([]);
+  let artistTopLoading = $state(false);
+  let artistTopError = $state('');
   let lastScore: { score: number; energy: number; valence: number; danceability: number; tempo: number } | null = $state(null);
   let autoScore = $state(false);
   let lastAutoScoreId: string | null = $state(null);
@@ -36,6 +156,11 @@
   let albumTracksLoading = $state(false);
   let albumTracksError = $state('');
   let selectedAlbumTitle = $state('');
+  let albumSessionQueue: any[] = $state([]);
+  let albumSessionIndex = $state(0);
+  let albumSessionYouTubeId: string | null = $state(null);
+  let albumSessionYouTubeTitle: string = $state('');
+  const currentAlbumSessionTrack = $derived(albumSessionQueue[albumSessionIndex] ?? null);
   let userReviews: any[] = $state([]);
   let reviewsLoaded = $state(false);
 
@@ -100,9 +225,15 @@
     stopYouTube();
     vibeMatches = [];
     lastScore = null;
+    artistTopTracks = [];
+    artistTopError = '';
     albumTracks = [];
     albumTracksError = '';
     selectedAlbumTitle = '';
+    albumSessionQueue = [];
+    albumSessionIndex = 0;
+    albumSessionYouTubeId = null;
+    albumSessionYouTubeTitle = '';
     // Reviews behalten, damit Treffer sofort angezeigt werden
   }
 
@@ -257,6 +388,44 @@
     ?? item?.artists?.[0]?.external_urls?.spotify
     ?? null;
 
+  const getYouTubeUrl = (item: any) =>
+    item?.external_urls?.youtube
+    ?? youtubeSearchUrl([getTitle(item), item?.artists?.[0]?.name ?? ''].filter(Boolean).join(' '));
+
+  async function fetchSpotifyTrack(name: string, artist: string) {
+    const key = `${name}|${artist}`.toLowerCase();
+    if (trackCache.has(key)) return trackCache.get(key);
+    const query = encodeURIComponent([name, artist].filter(Boolean).join(' '));
+    try {
+      const resp = await fetch(`/api/search?q=${query}&type=track`);
+      if (!resp.ok) return null;
+      const list = await resp.json();
+      const first = Array.isArray(list) ? list[0] : null;
+      if (first) trackCache.set(key, first);
+      return first ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function hydrateTracks(list: any[]) {
+    const hydrated = await Promise.all(
+      list.map(async (item) => {
+        const artist = item?.artists?.[0]?.name ?? '';
+        const match = await fetchSpotifyTrack(item?.name ?? '', artist);
+        if (!match) return item;
+        return {
+          ...match,
+          external_urls: {
+            ...match.external_urls,
+            youtube: item?.external_urls?.youtube
+          }
+        };
+      })
+    );
+    return hydrated;
+  }
+
   function handlePreview(item: any) {
     const previewUrl = getPreviewUrl(item);
 
@@ -337,26 +506,12 @@
 
       lastScore = { score, energy, valence, danceability: dance, tempo };
 
-      const params = new URLSearchParams({
-        energy: String(energy),
-        valence: String(valence),
-        danceability: String(dance),
-        tempo: String(tempo),
-        genre: (item?.artists?.[0]?.genres?.[0] ?? 'pop'),
-        seedTrack: trackId
-      });
-
-      try {
-        const recResp = await fetch(`/api/vibe?${params.toString()}`);
-        const rec = recResp.ok ? await recResp.json() : [];
-        const matches = Array.isArray(rec) ? rec : [];
-        vibeMatches = matches;
-        if (!matches.length) {
-          errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
-        }
-      } catch (err) {
-        console.warn('vibe recs failed, returning empty', err);
-        vibeMatches = [];
+      const hydrated = await hydrateTracks(fixedMatchTracks);
+      const matches = hydrated.length
+        ? hydrated.slice(0, 10).map((base) => ({ ...base }))
+        : [];
+      vibeMatches = matches;
+      if (!matches.length) {
         errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
       }
     } catch (e) {
@@ -422,6 +577,72 @@
       albumTracksError = 'Album-Titel konnten nicht geladen werden.';
     } finally {
       albumTracksLoading = false;
+    }
+  }
+
+  function startAlbumSession(tracks: any[]) {
+    if (!tracks.length) return;
+    albumSessionQueue = tracks;
+    albumSessionIndex = 0;
+    playAlbumSessionCurrent();
+  }
+
+  function playAlbumSessionCurrent() {
+    const track = albumSessionQueue[albumSessionIndex];
+    if (!track) return;
+    const previewUrl = getPreviewUrl(track);
+    if (previewUrl) {
+      albumSessionYouTubeId = null;
+      albumSessionYouTubeTitle = '';
+      handlePreview(track);
+      return;
+    }
+    playAlbumSessionYouTube(track);
+  }
+
+  function nextAlbumSession() {
+    if (!albumSessionQueue.length) return;
+    albumSessionIndex = (albumSessionIndex + 1) % albumSessionQueue.length;
+    playAlbumSessionCurrent();
+  }
+
+  async function playAlbumSessionYouTube(track: any) {
+    albumSessionYouTubeTitle = getTitle(track);
+    albumSessionYouTubeId = null;
+    const artist = track?.artists?.[0]?.name ?? '';
+    const query = [getTitle(track), artist, 'official audio'].filter(Boolean).join(' ');
+    try {
+      const yt = await fetch(`/api/youtube?q=${encodeURIComponent(query)}`).then(r => r.json());
+      albumSessionYouTubeId = yt?.videoId ?? null;
+      if (!albumSessionYouTubeId) {
+        errorMsg = 'Kein YouTube-Video gefunden.';
+      }
+    } catch (e) {
+      console.error('YouTube lookup failed', e);
+      errorMsg = 'YouTube-Suche fehlgeschlagen.';
+    }
+  }
+
+  async function loadArtistTopTracks(artist: any) {
+    if (!artist?.id) return;
+    artistTopLoading = true;
+    artistTopError = '';
+    artistTopTracks = [];
+    try {
+      const resp = await fetch(`/api/artist-top/${encodeURIComponent(artist.id)}`);
+      if (!resp.ok) {
+        throw new Error(await resp.text());
+      }
+      const list = await resp.json();
+      artistTopTracks = Array.isArray(list) ? list.slice(0, 5) : [];
+      if (!artistTopTracks.length) {
+        artistTopError = 'Keine Top-Tracks gefunden.';
+      }
+    } catch (err) {
+      console.error('loadArtistTopTracks failed', err);
+      artistTopError = 'Top-Tracks konnten nicht geladen werden.';
+    } finally {
+      artistTopLoading = false;
     }
   }
 
@@ -566,7 +787,11 @@
     </section>
   {/if}
 
-  <section class="hero" style={heroImage ? `background-image: linear-gradient(180deg, rgba(20,20,20,0.6), rgba(20,20,20,0.9)), url(${heroImage})` : ''}>
+  <section
+    class="hero"
+    class:compact={results.length > 0}
+    style={heroImage ? `background-image: linear-gradient(180deg, rgba(20,20,20,0.6), rgba(20,20,20,0.9)), url(${heroImage})` : ''}
+  >
     <div class="hero-content">
       <p class="eyebrow">Overview</p>
       <h1>{heroTrack ? getTitle(heroTrack) : 'Search your vibe'}</h1>
@@ -576,7 +801,11 @@
           <button class="btn primary is-play" onclick={() => handlePreview(heroTrack)}>
             {getPreviewUrl(heroTrack) ? (currentPreviewUrl === getPreviewUrl(heroTrack) && isPlaying ? 'Pause' : 'Play first') : 'Play on YouTube'}
           </button>
-          {#if heroIsTrack}
+          {#if searchType === 'artist'}
+            <button class="btn secondary" onclick={() => loadArtistTopTracks(heroTrack)} disabled={artistTopLoading}>
+              {artistTopLoading ? 'Lade Top 5...' : 'Top 5 Songs'}
+            </button>
+          {:else if heroIsTrack}
             <button class="btn secondary" onclick={() => scoreAndRecommend(heroTrack)} disabled={scoreLoadingId === heroTrack.id}>
               {scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe'}
             </button>
@@ -594,9 +823,43 @@
     </div>
   </section>
 
+  {#if searchType === 'artist' && (artistTopLoading || artistTopError || artistTopTracks.length)}
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <h2>Top 5 Songs</h2>
+          {#if artistTopLoading} <span class="count">Loading...</span> {/if}
+        </div>
+      </div>
+
+      {#if artistTopError}
+        <p class="error">{artistTopError}</p>
+      {:else if artistTopLoading}
+        <p class="muted">Lade Top-Tracks...</p>
+      {:else}
+        <div class="tracklist">
+          {#each artistTopTracks as track (track.id ?? track.uri ?? track.name)}
+            <div class="track-row">
+              <div class="track-num">#</div>
+              <div class="track-main">
+                <div class="track-title">{getTitle(track)}</div>
+                <div class="track-sub">{getSubtitle(track)}</div>
+              </div>
+              <div class="track-actions">
+                <button class="btn primary is-play" onclick={() => handlePreview(track)}>
+                  {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
+                </button>
+                <a class="btn secondary is-open" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Details</a>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
+  {/if}
+
   {#if matchedReviews.length}
-    <aside class="review-side">
-      <div class="panel review-panel">
+    <section class="panel review-panel">
         <div class="panel-header">
           <div class="panel-title">
             <h2>Dein Review</h2>
@@ -622,8 +885,7 @@
             </div>
           {/each}
         </div>
-      </div>
-    </aside>
+    </section>
   {/if}
 
   {#if searchType === 'album'}
@@ -633,6 +895,11 @@
           <h2>Album Tracks {selectedAlbumTitle ? `- ${selectedAlbumTitle}` : ''}</h2>
           {#if albumTracksLoading} <span class="count">Loading...</span> {/if}
         </div>
+        {#if albumTracks.length}
+          <button class="btn secondary" onclick={() => startAlbumSession(albumTracks)}>
+            Album Session starten
+          </button>
+        {/if}
       </div>
 
       {#if albumTracksError}
@@ -669,6 +936,59 @@
         </div>
       {/if}
     </section>
+  {/if}
+
+  {#if albumSessionQueue.length}
+    <div class="session-player">
+      <div class="session-header">
+        <div class="session-title">Album Session</div>
+        <div class="session-count">{albumSessionQueue.length} Tracks</div>
+      </div>
+      {#if currentAlbumSessionTrack}
+        <div class="session-now">
+          <img src={getImage(currentAlbumSessionTrack) || '/fallback-cover.svg'} alt={getTitle(currentAlbumSessionTrack)} />
+          <div>
+            <div class="session-track">{getTitle(currentAlbumSessionTrack)}</div>
+            <div class="session-artist">{getSubtitle(currentAlbumSessionTrack)}</div>
+          </div>
+        </div>
+      {/if}
+      <div class="session-actions">
+        <button
+          class="session-btn primary"
+          onclick={() => {
+            if (currentAlbumSessionTrack && currentPreviewUrl === getPreviewUrl(currentAlbumSessionTrack) && isPlaying) {
+              stopPreview();
+            } else {
+              playAlbumSessionCurrent();
+            }
+          }}
+        >
+          {currentAlbumSessionTrack && currentPreviewUrl === getPreviewUrl(currentAlbumSessionTrack) && isPlaying ? 'Pause' : 'Play'}
+        </button>
+        <button class="session-btn" onclick={nextAlbumSession}>Next</button>
+      </div>
+      {#if albumSessionYouTubeId}
+        <iframe
+          class="session-yt"
+          width="100%"
+          height="180"
+          src={`https://www.youtube.com/embed/${albumSessionYouTubeId}?autoplay=1`}
+          title={albumSessionYouTubeTitle || 'YouTube player'}
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; autoplay"
+          allowfullscreen
+        ></iframe>
+      {/if}
+      <ol class="session-list">
+        {#each albumSessionQueue.slice(0, 5) as item, idx (item.id ?? item.uri ?? item.name)}
+          <li class:active={idx === albumSessionIndex}>
+            <span>{idx + 1}.</span>
+            <span>{getTitle(item)}</span>
+          </li>
+        {/each}
+      </ol>
+    </div>
   {/if}
 
   <section class="panel">
@@ -826,6 +1146,10 @@
     flex-direction: column;
     gap: 10px;
     box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    position: sticky;
+    top: 68px;
+    z-index: 5;
+    backdrop-filter: blur(6px);
   }
 
   .search-row {
@@ -974,6 +1298,120 @@
     gap: 8px;
   }
 
+  .session-player {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 320px;
+    background: linear-gradient(180deg, rgba(24, 32, 40, 0.98), rgba(15, 19, 26, 0.95));
+    border: 1px solid rgba(61, 224, 116, 0.35);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    animation: pulseGlow 2.4s ease-in-out infinite;
+  }
+  .session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .session-title {
+    font-weight: 700;
+    color: #e8ecf2;
+    font-size: 14px;
+  }
+  .session-title::before {
+    content: '●';
+    color: #3de074;
+    margin-right: 6px;
+    font-size: 12px;
+  }
+  .session-count {
+    font-size: 12px;
+    color: #9fb0c6;
+  }
+  .session-now {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .session-now img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #2b323c;
+  }
+  .session-track {
+    color: #e8ecf2;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-artist {
+    color: #9fb0c6;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .session-btn {
+    flex: 1;
+    border-radius: 10px;
+    border: 1px solid #2b323c;
+    background: #1f2631;
+    color: #c5d4e8;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .session-btn.primary {
+    background: linear-gradient(135deg, #3de074, #32b5ff);
+    color: #0d1118;
+  }
+  .session-btn.primary:hover {
+    box-shadow: 0 10px 20px rgba(61, 224, 116, 0.25);
+    transform: translateY(-1px);
+  }
+  .session-yt {
+    border-radius: 10px;
+    border: 1px solid #2b323c;
+    margin-bottom: 10px;
+  }
+  .session-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    color: #9fb0c6;
+  }
+  .session-list li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 6px;
+  }
+  .session-list li.active {
+    color: #e8ecf2;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 0 rgba(61, 224, 116, 0.0); }
+    50% { box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 24px rgba(61, 224, 116, 0.18); }
+  }
+
   .hero {
     position: relative;
     border-radius: 18px;
@@ -983,6 +1421,9 @@
     border: 1px solid #2c2c2c;
     display: flex;
     align-items: flex-end;
+  }
+  .hero.compact {
+    min-height: 160px;
   }
 
   .hero-content {
@@ -1243,14 +1684,6 @@
     color: #8ab4ff;
   }
 
-  .review-side {
-    position: absolute;
-    right: 18px;
-    top: 120px;
-    width: min(340px, calc(100% - 32px));
-    z-index: 2;
-  }
-
   .review-chip {
     display: inline-flex;
     gap: 8px;
@@ -1330,6 +1763,35 @@
     .mini-actions {
       grid-column: 1 / -1;
       justify-content: flex-start;
+    }
+    .session-player {
+      right: 12px;
+      left: 12px;
+      width: auto;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .search-panel {
+      padding: 12px;
+      gap: 8px;
+    }
+    .search-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .btn.primary {
+      width: 100%;
+    }
+    .tabs {
+      gap: 6px;
+    }
+    .tabs label {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .autoscore {
+      font-size: 12px;
     }
   }
 </style>

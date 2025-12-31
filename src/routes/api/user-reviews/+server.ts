@@ -51,12 +51,12 @@ export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json().catch(() => null);
 	const trackName = body?.trackName?.trim?.();
 	const artist = body?.artist?.trim?.();
-	const album = body?.album?.trim?.();
+	const album = body?.album?.trim?.() ?? '';
 	const ratingValue = Number(body?.rating ?? 0);
 	const notes = (body?.notes ?? '').toString().trim();
 
-	if (!trackName || !artist || !album) {
-		return json({ error: 'trackName, artist und album sind erforderlich' }, { status: 400 });
+	if (!trackName || !artist) {
+		return json({ error: 'trackName und artist sind erforderlich' }, { status: 400 });
 	}
 
 	const col = await tryGetCollection();

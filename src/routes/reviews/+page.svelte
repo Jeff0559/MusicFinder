@@ -17,7 +17,7 @@
 
 	const albumFromReview = (review: StoredReview): SpotifyAlbum => ({
 		id: review.id,
-		name: review.album,
+		name: review.album || review.trackName,
 		artists: [{ id: review.id, name: review.artist }],
 		images: (review.coverUrl || reviewCovers[review.id])
 			? [{ url: review.coverUrl || reviewCovers[review.id] }]
@@ -175,8 +175,8 @@
 		event.preventDefault();
 		if (saving) return;
 
-		if (!newReview.trackName.trim() || !newReview.artist.trim() || !newReview.album.trim()) {
-			error = 'Bitte Track, Artist und Album ausfÃ¼llen.';
+		if (!newReview.trackName.trim() || !newReview.artist.trim()) {
+			error = 'Bitte Track und Artist ausfÃ¼llen.';
 			return;
 		}
 
@@ -285,7 +285,9 @@
 							<div class="review-info">
 								<h3>{track.trackName}</h3>
 								<p class="artist">{track.artist}</p>
-								<p class="album-name">from <strong>{track.album}</strong></p>
+								<p class="album-name">
+									from <strong>{track.album || 'Single'}</strong>
+								</p>
 							</div>
 							<div class="review-rating">
 								<RatingStars rating={track.rating} />
@@ -349,7 +351,7 @@
 					<div class="album-info">
 						<p><strong>Track:</strong> {selectedAlbum.trackName}</p>
 						<p><strong>Artist:</strong> {selectedAlbum.artist}</p>
-						<p><strong>Album:</strong> {selectedAlbum.album}</p>
+						<p><strong>Album:</strong> {selectedAlbum.album || 'Single'}</p>
 						<p><strong>Bewertung:</strong> {selectedAlbum.rating.toFixed(1)} / 5</p>
 						<p><strong>Hinzugefuegt:</strong> {new Date(selectedAlbum.createdAt).toLocaleDateString('de-DE')}</p>
 					</div>
@@ -389,8 +391,8 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="album-name">Album</label>
-						<input id="album-name" type="text" bind:value={newReview.album} required placeholder="Enter album name..." />
+						<label for="album-name">Album (optional)</label>
+						<input id="album-name" type="text" bind:value={newReview.album} placeholder="Enter album name..." />
 					</div>
 					<div class="form-group">
 						<label for="rating-input">Rating</label>

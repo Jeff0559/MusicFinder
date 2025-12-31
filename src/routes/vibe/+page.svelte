@@ -26,24 +26,24 @@
   const pearlMatchTrack = {
     id: 'pearl-shade',
     name: 'Pearl',
-    artists: [{ name: 'Shade' }],
+    artists: [{ name: 'Sade' }],
     album: { name: 'Pearl', images: [{ url: '/fallback-cover.svg' }] },
     external_urls: {
-      youtube: youtubeSearchUrl('Shade Pearl'),
-      spotify: 'https://open.spotify.com/search/Pearl%20Shade'
+      youtube: youtubeSearchUrl('Sade Pearl'),
+      spotify: 'https://open.spotify.com/search/Pearl%20Sade'
     }
   };
 
   const fixedMatchTracks = [
     pearlMatchTrack,
     {
-      id: 'wish-denzel-curry',
-      name: 'Wish',
-      artists: [{ name: 'Denzel Curry' }],
-      album: { name: 'Wish', images: [{ url: '/fallback-cover.svg' }] },
+      id: 'no-church-in-the-wild',
+      name: 'No Church in the Wild',
+      artists: [{ name: 'Jay-Z & Kanye West' }, { name: 'Frank Ocean' }],
+      album: { name: 'Watch the Throne', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
-        youtube: youtubeSearchUrl('Denzel Curry Wish'),
-        spotify: 'https://open.spotify.com/search/Denzel%20Curry%20Wish'
+        youtube: youtubeSearchUrl('No Church in the Wild Jay-Z Kanye West Frank Ocean'),
+        spotify: 'https://open.spotify.com/search/No%20Church%20in%20the%20Wild'
       }
     },
     {
@@ -57,13 +57,83 @@
       }
     },
     {
-      id: 'bullet-from-a-gun-skepta',
-      name: 'Bullet From a Gun',
-      artists: [{ name: 'Skepta' }],
-      album: { name: 'Ignorance Is Bliss', images: [{ url: '/fallback-cover.svg' }] },
+      id: '03-adolescence',
+      name: '03 Adolescence',
+      artists: [{ name: 'J. Cole' }],
+      album: { name: '2014 Forest Hills Drive', images: [{ url: '/fallback-cover.svg' }] },
       external_urls: {
-        youtube: youtubeSearchUrl('Skepta Bullet From a Gun'),
-        spotify: 'https://open.spotify.com/search/Skepta%20Bullet%20From%20a%20Gun'
+        youtube: youtubeSearchUrl('03 Adolescence J. Cole'),
+        spotify: 'https://open.spotify.com/search/03%20Adolescence%20J.%20Cole'
+      }
+    },
+    {
+      id: 'blinding-lights',
+      name: 'Blinding Lights',
+      artists: [{ name: 'The Weeknd' }],
+      album: { name: 'After Hours', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('The Weeknd Blinding Lights'),
+        spotify: 'https://open.spotify.com/search/Blinding%20Lights%20The%20Weeknd'
+      }
+    },
+    {
+      id: 'strobe',
+      name: 'Strobe',
+      artists: [{ name: 'deadmau5' }],
+      album: { name: 'For Lack of a Better Name', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('deadmau5 Strobe'),
+        spotify: 'https://open.spotify.com/search/deadmau5%20Strobe'
+      }
+    },
+    {
+      id: 'so-what',
+      name: 'So What',
+      artists: [{ name: 'Miles Davis' }],
+      album: { name: 'Kind of Blue', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Miles Davis So What'),
+        spotify: 'https://open.spotify.com/search/Miles%20Davis%20So%20What'
+      }
+    },
+    {
+      id: 'time',
+      name: 'Time',
+      artists: [{ name: 'Pink Floyd' }],
+      album: { name: 'The Dark Side of the Moon', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Pink Floyd Time'),
+        spotify: 'https://open.spotify.com/search/Pink%20Floyd%20Time'
+      }
+    },
+    {
+      id: 'get-lucky',
+      name: 'Get Lucky',
+      artists: [{ name: 'Daft Punk' }, { name: 'Pharrell Williams' }],
+      album: { name: 'Random Access Memories', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Daft Punk Get Lucky'),
+        spotify: 'https://open.spotify.com/search/Get%20Lucky%20Daft%20Punk'
+      }
+    },
+    {
+      id: 'redbone',
+      name: 'Redbone',
+      artists: [{ name: 'Childish Gambino' }],
+      album: { name: 'Awaken, My Love!', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Childish Gambino Redbone'),
+        spotify: 'https://open.spotify.com/search/Redbone%20Childish%20Gambino'
+      }
+    },
+    {
+      id: 'humble',
+      name: 'HUMBLE.',
+      artists: [{ name: 'Kendrick Lamar' }],
+      album: { name: 'DAMN.', images: [{ url: '/fallback-cover.svg' }] },
+      external_urls: {
+        youtube: youtubeSearchUrl('Kendrick Lamar HUMBLE'),
+        spotify: 'https://open.spotify.com/search/HUMBLE%20Kendrick%20Lamar'
       }
     }
   ];
@@ -159,11 +229,8 @@
     return hydrated;
   }
 
-  function buildPearlMatches(count = 6, baseList = fixedMatchTracks) {
-    return Array.from({ length: count }, (_, i) => {
-      const base = baseList[i % baseList.length];
-      return { ...base, id: `${base.id}-${i + 1}` };
-    });
+  function buildPearlMatches(count = 10, baseList = fixedMatchTracks) {
+    return baseList.slice(0, count).map((base) => ({ ...base }));
   }
 
   let energy = $state(70);
@@ -171,6 +238,7 @@
   let danceability = $state(70);
   let tempo = $state(120);
   let genre = $state('pop');
+  let activePreset = $state<string | null>(null);
 
   let tracks: any[] = $state([]);
   let isLoading = $state(false);
@@ -180,6 +248,9 @@
   let sessionQueue: any[] = $state([]);
   let sessionIndex = $state(0);
   let sessionTargets: { energy: number; valence: number; danceability: number; tempo: number; genre: string } | null = $state(null);
+  const currentSessionTrack = $derived(sessionQueue[sessionIndex] ?? null);
+  let sessionYouTubeId: string | null = $state(null);
+  let sessionYouTubeTitle: string = $state('');
 
   async function matchVibe() {
     isLoading = true;
@@ -187,7 +258,7 @@
 
     try {
       const hydrated = await hydrateTracks(fixedMatchTracks);
-      tracks = buildPearlMatches(6, hydrated);
+      tracks = buildPearlMatches(10, hydrated);
     } catch (e) {
       console.error('matchVibe failed', e);
       errorMsg = 'Vibe Match fehlgeschlagen. Bitte erneut versuchen.' + (e instanceof Error && e.message ? ` (${e.message})` : '');
@@ -203,6 +274,7 @@
     danceability = preset.danceability;
     tempo = preset.tempo;
     genre = preset.genre;
+    activePreset = preset.label;
     matchVibe();
   }
 
@@ -236,10 +308,7 @@
     const previewUrl = getPreviewUrl(item);
 
     if (!previewUrl) {
-      const link = getExternalUrl(item);
-      if (link && typeof window !== 'undefined') {
-        window.open(link, '_blank', 'noreferrer');
-      }
+      errorMsg = 'Kein Preview verfÃ¼gbar. Wiedergabe ist nur im Player mÃ¶glich.';
       return;
     }
 
@@ -257,10 +326,7 @@
     const previewUrl = getPreviewUrl(item);
 
     if (!previewUrl) {
-      const link = getExternalUrl(item);
-      if (link && typeof window !== 'undefined') {
-        window.open(link, '_blank', 'noreferrer');
-      }
+      errorMsg = 'Kein Preview verfÃ¼gbar. Wiedergabe ist nur im Player mÃ¶glich.';
       return;
     }
 
@@ -297,13 +363,37 @@
   function playSessionCurrent() {
     const track = sessionQueue[sessionIndex];
     if (!track) return;
-    playTrack(track);
+    const previewUrl = getPreviewUrl(track);
+    if (previewUrl) {
+      sessionYouTubeId = null;
+      sessionYouTubeTitle = '';
+      playTrack(track);
+      return;
+    }
+    playSessionYouTube(track);
   }
 
   function nextSession() {
     if (!sessionQueue.length) return;
     sessionIndex = (sessionIndex + 1) % sessionQueue.length;
     playSessionCurrent();
+  }
+
+  async function playSessionYouTube(track: any) {
+    sessionYouTubeTitle = getTitle(track);
+    sessionYouTubeId = null;
+    const artist = track?.artists?.[0]?.name ?? '';
+    const query = [getTitle(track), artist, 'official audio'].filter(Boolean).join(' ');
+    try {
+      const yt = await fetch(`/api/youtube?q=${encodeURIComponent(query)}`).then(r => r.json());
+      sessionYouTubeId = yt?.videoId ?? null;
+      if (!sessionYouTubeId) {
+        errorMsg = 'Kein YouTube-Video gefunden.';
+      }
+    } catch (e) {
+      console.error('YouTube lookup failed', e);
+      errorMsg = 'YouTube-Suche fehlgeschlagen.';
+    }
   }
 
   const unsubAudio = currentAudio.subscribe((audio) => {
@@ -347,9 +437,17 @@
         Setze die Scores f&uuml;r Energy, Valence, Danceability und Tempo &ndash; wir holen dir Tracks,
         die genau zu diesem Vibe passen.
       </p>
+      <div class="preset-label">Presets</div>
       <div class="preset-row">
         {#each presets as p}
-          <button class="chip" onclick={() => applyPreset(p)}>{p.label}</button>
+          <button
+            class="chip"
+            class:active={activePreset === p.label}
+            aria-pressed={activePreset === p.label}
+            onclick={() => applyPreset(p)}
+          >
+            {p.label}
+          </button>
         {/each}
       </div>
     </div>
@@ -442,11 +540,7 @@
       <div class="grid">
         {#each tracks as item (item.id ?? item.uri ?? item.name)}
           <article class="card">
-            {#if getImage(item)}
-              <img src={getImage(item)} alt={getTitle(item)} loading="lazy" />
-            {:else}
-              <div class="placeholder">No Image</div>
-            {/if}
+            <img src={getImage(item) || '/fallback-cover.svg'} alt={getTitle(item)} loading="lazy" />
             <h3>{getTitle(item)}</h3>
             {#if getSubtitle(item)}
               <p class="subtitle">{getSubtitle(item)}</p>
@@ -480,11 +574,7 @@
       <div class="grid">
         {#each sessionQueue as item, idx (item.id ?? item.uri ?? item.name)}
           <article class="card" class:active={idx === sessionIndex}>
-            {#if getImage(item)}
-              <img src={getImage(item)} alt={getTitle(item)} loading="lazy" />
-            {:else}
-              <div class="placeholder">No Image</div>
-            {/if}
+            <img src={getImage(item) || '/fallback-cover.svg'} alt={getTitle(item)} loading="lazy" />
             <h3>{getTitle(item)}</h3>
             {#if getSubtitle(item)}
               <p class="subtitle">{getSubtitle(item)}</p>
@@ -501,6 +591,59 @@
         {/each}
       </div>
     </section>
+  {/if}
+
+  {#if sessionQueue.length}
+    <div class="session-player">
+      <div class="session-header">
+        <div class="session-title">Vibe Session</div>
+        <div class="session-count">{sessionQueue.length} Tracks</div>
+      </div>
+      {#if currentSessionTrack}
+        <div class="session-now">
+          <img src={getImage(currentSessionTrack) || '/fallback-cover.svg'} alt={getTitle(currentSessionTrack)} />
+          <div>
+            <div class="session-track">{getTitle(currentSessionTrack)}</div>
+            <div class="session-artist">{getSubtitle(currentSessionTrack)}</div>
+          </div>
+        </div>
+      {/if}
+      <div class="session-actions">
+        <button
+          class="session-btn primary"
+          onclick={() => {
+            if (currentSessionTrack && currentPreviewUrl === getPreviewUrl(currentSessionTrack) && isPlaying) {
+              stopPreview();
+            } else {
+              playSessionCurrent();
+            }
+          }}
+        >
+          {currentSessionTrack && currentPreviewUrl === getPreviewUrl(currentSessionTrack) && isPlaying ? 'Pause' : 'Play'}
+        </button>
+        <button class="session-btn" onclick={nextSession}>Next</button>
+      </div>
+      {#if sessionYouTubeId}
+        <iframe
+          class="session-yt"
+          width="100%"
+          height="180"
+          src={`https://www.youtube.com/embed/${sessionYouTubeId}?autoplay=1`}
+          title={sessionYouTubeTitle || 'YouTube player'}
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; autoplay"
+          allowfullscreen
+        ></iframe>
+      {/if}
+      <ol class="session-list">
+        {#each sessionQueue.slice(0, 5) as item, idx (item.id ?? item.uri ?? item.name)}
+          <li class:active={idx === sessionIndex}>
+            <span>{idx + 1}.</span>
+            <span>{getTitle(item)}</span>
+          </li>
+        {/each}
+      </ol>
+    </div>
   {/if}
 </main>
 
@@ -542,7 +685,7 @@
     display: grid;
     grid-template-columns: 2fr 1.1fr;
     gap: 24px;
-    background: linear-gradient(135deg, rgba(61, 224, 116, 0.12), rgba(50, 181, 255, 0.08));
+    background: linear-gradient(135deg, rgba(61, 224, 116, 0.14), rgba(50, 181, 255, 0.08));
     border: 1px solid #1e262f;
     border-radius: 16px;
     padding: 22px;
@@ -575,6 +718,14 @@
     gap: 10px;
   }
 
+  .preset-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8aa0b2;
+    margin: 10px 0 6px;
+  }
+
   .chip {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid #2b323c;
@@ -588,6 +739,13 @@
   .chip:hover {
     border-color: #3de074;
     color: #3de074;
+  }
+  .chip.active {
+    background: rgba(61, 224, 116, 0.18);
+    border-color: #3de074;
+    color: #e8ecf2;
+    box-shadow: 0 8px 20px rgba(61, 224, 116, 0.2);
+    transform: translateY(-1px);
   }
 
   .hero-card {
@@ -653,6 +811,7 @@
     grid-column: 1 / -1;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
   }
 
   .primary {
@@ -686,6 +845,7 @@
     border: 1px solid #222a35;
     padding: 14px;
     min-height: 220px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   }
 
   .results-header {
@@ -714,6 +874,7 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 14px;
     margin-top: 8px;
+    grid-auto-rows: 1fr;
   }
 
   .card {
@@ -725,22 +886,20 @@
     flex-direction: column;
     gap: 8px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    transition: transform 140ms ease, border 140ms ease, box-shadow 140ms ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(61, 224, 116, 0.4);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   }
 
-  .card img,
-  .card .placeholder {
+  .card img {
     width: 100%;
     height: 140px;
     border-radius: 8px;
     object-fit: cover;
     background: #0f131a;
-  }
-
-  .placeholder {
-    display: grid;
-    place-items: center;
-    color: #70829c;
-    border: 1px dashed #2b323c;
   }
 
   .card h3 {
@@ -753,6 +912,11 @@
     margin: 0;
     font-size: 13px;
     color: #9fb0c6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 34px;
   }
 
   .actions .play-btn {
@@ -764,6 +928,14 @@
     color: #0d1118;
     font-weight: 700;
     cursor: pointer;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+  .actions .play-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(61, 224, 116, 0.2);
+  }
+  .actions {
+    margin-top: auto;
   }
 
   .card.active {
@@ -805,6 +977,112 @@
     .ghost {
       width: 100%;
       text-align: center;
+    }
+  }
+
+  .session-player {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 320px;
+    background: rgba(15, 19, 26, 0.92);
+    border: 1px solid #2b323c;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+    z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+  .session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .session-title {
+    font-weight: 700;
+    color: #e8ecf2;
+    font-size: 14px;
+  }
+  .session-count {
+    font-size: 12px;
+    color: #9fb0c6;
+  }
+  .session-now {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .session-now img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #2b323c;
+  }
+  .session-track {
+    color: #e8ecf2;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-artist {
+    color: #9fb0c6;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .session-yt {
+    border-radius: 10px;
+    border: 1px solid #2b323c;
+    margin-bottom: 10px;
+  }
+  .session-btn {
+    flex: 1;
+    border-radius: 10px;
+    border: 1px solid #2b323c;
+    background: #1f2631;
+    color: #c5d4e8;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .session-btn.primary {
+    background: linear-gradient(135deg, #3de074, #32b5ff);
+    color: #0d1118;
+  }
+  .session-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    color: #9fb0c6;
+  }
+  .session-list li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 6px;
+  }
+  .session-list li.active {
+    color: #e8ecf2;
+  }
+  @media (max-width: 600px) {
+    .session-player {
+      right: 12px;
+      left: 12px;
+      width: auto;
     }
   }
 </style>
