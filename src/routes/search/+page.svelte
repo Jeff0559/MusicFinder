@@ -510,7 +510,10 @@
       const matches = hydrated.length
         ? hydrated.slice(0, 10).map((base) => ({ ...base }))
         : [];
-      vibeMatches = matches;
+      const withSelected = [item, ...matches].filter(Boolean);
+      vibeMatches = Array.from(
+        new Map(withSelected.map((match) => [resultKey(match), match])).values()
+      ).slice(0, 10);
       if (!matches.length) {
         errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
       }
@@ -585,6 +588,15 @@
     albumSessionQueue = tracks;
     albumSessionIndex = 0;
     playAlbumSessionCurrent();
+  }
+
+  function closeAlbumSession() {
+    albumSessionQueue = [];
+    albumSessionIndex = 0;
+    albumSessionYouTubeId = null;
+    albumSessionYouTubeTitle = '';
+    stopPreview();
+    stopYouTube();
   }
 
   function playAlbumSessionCurrent() {
@@ -942,7 +954,10 @@
     <div class="session-player">
       <div class="session-header">
         <div class="session-title">Album Session</div>
-        <div class="session-count">{albumSessionQueue.length} Tracks</div>
+        <div class="session-header-actions">
+          <div class="session-count">{albumSessionQueue.length} Tracks</div>
+          <button class="session-close" onclick={closeAlbumSession} aria-label="Close album session">x</button>
+        </div>
       </div>
       {#if currentAlbumSessionTrack}
         <div class="session-now">
@@ -1318,6 +1333,11 @@
     align-items: center;
     margin-bottom: 10px;
   }
+  .session-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .session-title {
     font-weight: 700;
     color: #e8ecf2;
@@ -1332,6 +1352,18 @@
   .session-count {
     font-size: 12px;
     color: #9fb0c6;
+  }
+  .session-close {
+    border-radius: 8px;
+    border: 1px solid #2b323c;
+    background: #1f2631;
+    color: #c5d4e8;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .session-close:hover {
+    border-color: rgba(61, 224, 116, 0.6);
   }
   .session-now {
     display: grid;

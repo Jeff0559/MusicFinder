@@ -1,57 +1,102 @@
 ﻿<script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import VinylCarousel from '$lib/components/VinylCarousel.svelte';
   import { recent } from '$lib/stores/recent';
 
+  const SEARCH_DEBOUNCE_MS = 300;
+  const MAX_VINYL_TERMS = 10;
+  const VINYL_FALLBACK = '/fallback-cover.svg';
+
+  type SearchItem = {
+    id?: string;
+    uri?: string;
+    name?: string;
+    images?: { url: string }[];
+    album?: { name?: string; images?: { url: string }[] };
+    artists?: { name?: string; images?: { url: string }[] }[];
+    track?: { name?: string };
+    release_date?: string;
+    followers?: { total?: number };
+    popularity?: number;
+  };
+
   let query = '';
   let type: 'track' | 'album' | 'artist' = 'track';
-  let searchResults: any[] = [];
+  let searchResults: SearchItem[] = [];
   let searchLoading = false;
   let searchError = '';
 
   let recentTerms: string[] = [];
-  let trendingAlbums: any[] = [];
-  let trendingArtists: any[] = [];
   let vinylItems: { label: string; image: string }[] = [];
+  let recentKey = '';
+  let searchDebounce: ReturnType<typeof setTimeout> | undefined;
 
-  const getImage = (item: any) =>
+  const moodTags = [
+    'Pop',
+    'Chill',
+    'Focus',
+    'Workout',
+    'Party',
+    'EDM',
+    'Jazz',
+    'Rock',
+    'Piano',
+    'Sleep',
+    'Roadtrip',
+    'Gaming'
+  ];
+
+  const getImage = (item: SearchItem) =>
     item?.images?.[0]?.url
     ?? item?.album?.images?.[0]?.url
     ?? item?.artists?.[0]?.images?.[0]?.url
     ?? '';
 
-  const getTitle = (item: any) =>
+  const getTitle = (item: SearchItem) =>
     item?.name
     ?? item?.album?.name
     ?? item?.track?.name
     ?? '';
 
-  const getSubtitle = (item: any) => {
+  const getSubtitle = (item: SearchItem) => {
+    const artist = item?.artists?.[0]?.name ?? '';
     if (type === 'track') {
-      const artist = item?.artists?.[0]?.name ?? '';
       const album = item?.album?.name ?? '';
       return [artist, album].filter(Boolean).join(' / ');
     }
     if (type === 'album') {
-      const artist = item?.artists?.[0]?.name ?? '';
       const year = item?.release_date?.slice?.(0, 4) ?? '';
       return [artist, year].filter(Boolean).join(' / ');
     }
     const followers = item?.followers?.total?.toLocaleString?.() ?? '';
     const pop = item?.popularity ?? '';
-    return [followers ? `${followers} Follower` : '', pop ? `Popularity ${pop}` : ''].filter(Boolean).join(' / ');
+    return [
+      followers ? `${followers} Follower` : '',
+      pop ? `Popularity ${pop}` : ''
+    ].filter(Boolean).join(' / ');
   };
 
-  const unsub = recent.subscribe(v => (recentTerms = v));
-  onDestroy(() => unsub());
+  const unsub = recent.subscribe((value) => (recentTerms = value));
+  onDestroy(() => {
+    unsub();
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+  });
 
   async function goSearch() {
-    if (!query.trim()) return;
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
     searchLoading = true;
     searchError = '';
     searchResults = [];
 
-    const params = new URLSearchParams({ q: query, type });
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+      searchDebounce = undefined;
+    }
+
+    const params = new URLSearchParams({ q: trimmedQuery, type });
     try {
       const resp = await fetch(`/api/search?${params.toString()}`);
       if (!resp.ok) {
@@ -80,18 +125,47 @@
     goSearch();
   }
 
-  onMount(async () => {
-    loadVinylImages();
-  });
+  function scheduleSearch() {
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+    searchDebounce = setTimeout(goSearch, SEARCH_DEBOUNCE_MS);
+  }
+
+  $: {
+    const nextKey = recentTerms.slice(-MAX_VINYL_TERMS).join('|');
+    if (!nextKey) {
+      recentKey = '';
+      vinylItems = [];
+    } else if (nextKey !== recentKey) {
+      recentKey = nextKey;
+      loadVinylImages();
+    }
+  }
+
+  function uniqueTerms(list: string[]) {
+    const seen = new Set<string>();
+    return list.filter((term) => {
+      const key = term.trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
 
   async function loadVinylImages() {
+    const recentSlice = uniqueTerms(recentTerms.slice(-MAX_VINYL_TERMS));
+    if (!recentSlice.length) {
+      vinylItems = [];
+      return;
+    }
     vinylItems = await Promise.all(
-      recentTerms.slice(-10).map(async (term) => {
+      recentSlice.map(async (term) => {
         try {
           const r = await fetch(`/api/cover?q=${encodeURIComponent(term)}`).then(r => r.json());
-          return { label: term, image: r.image || '/fallback-cover.svg' };
-        } catch (e) {
-          return { label: term, image: '/fallback-cover.svg' };
+          return { label: term, image: r.image || VINYL_FALLBACK };
+        } catch {
+          return { label: term, image: VINYL_FALLBACK };
         }
       })
     );
@@ -109,9 +183,10 @@
         <input
           bind:value={query}
           placeholder="Suche nach Song, Artist oder Album"
-          onkeydown={(e)=> e.key === 'Enter' && goSearch()}
+          on:input={() => scheduleSearch()}
+          on:keydown={(e) => e.key === 'Enter' && goSearch()}
         />
-        <button class="search-btn" onclick={() => goSearch(false)} disabled={searchLoading}>
+        <button class="search-btn" on:click={() => goSearch()} disabled={searchLoading}>
           {searchLoading ? 'Suche...' : 'Suchen'}
         </button>
       </div>
@@ -134,7 +209,7 @@
 
       <div class="vinyl-section">
         <h3>Empfohlene Vinyls</h3>
-      <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(); }} />
+        <VinylCarousel items={vinylItems} onSelect={(t) => { query = t; goSearch(); }} />
       </div>
     </div>
   </div>
@@ -144,8 +219,8 @@
   <div class="discover-section">
 
     <section class="mood-tags">
-      {#each ['Pop','Chill','Focus','Workout','Party','EDM','Jazz','Rock','Piano','Sleep','Roadtrip','Gaming'] as g}
-        <button class="mood-tag" onclick={() => useTerm(g)}>{g}</button>
+      {#each moodTags as g}
+        <button class="mood-tag" on:click={() => useTerm(g)}>{g}</button>
       {/each}
     </section>
 

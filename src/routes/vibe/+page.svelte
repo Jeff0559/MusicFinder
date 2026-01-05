@@ -353,6 +353,15 @@
     playSessionCurrent();
   }
 
+  function closeSession() {
+    sessionQueue = [];
+    sessionIndex = 0;
+    sessionTargets = null;
+    sessionYouTubeId = null;
+    sessionYouTubeTitle = '';
+    stopPreview();
+  }
+
   function addToSession(item: any) {
     sessionQueue = [...sessionQueue, item];
     if (!sessionTargets) {
@@ -597,7 +606,10 @@
     <div class="session-player">
       <div class="session-header">
         <div class="session-title">Vibe Session</div>
-        <div class="session-count">{sessionQueue.length} Tracks</div>
+        <div class="session-header-actions">
+          <div class="session-count">{sessionQueue.length} Tracks</div>
+          <button class="session-close" onclick={closeSession} aria-label="Close vibe session">x</button>
+        </div>
       </div>
       {#if currentSessionTrack}
         <div class="session-now">
@@ -999,6 +1011,11 @@
     align-items: center;
     margin-bottom: 10px;
   }
+  .session-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .session-title {
     font-weight: 700;
     color: #e8ecf2;
@@ -1007,6 +1024,18 @@
   .session-count {
     font-size: 12px;
     color: #9fb0c6;
+  }
+  .session-close {
+    border-radius: 8px;
+    border: 1px solid #2b323c;
+    background: #1f2631;
+    color: #c5d4e8;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .session-close:hover {
+    border-color: rgba(61, 224, 116, 0.6);
   }
   .session-now {
     display: grid;
