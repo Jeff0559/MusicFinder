@@ -47,7 +47,7 @@
 
 	.bar-background {
 		width: 100%;
-		height: 8px;
+		height: 0.5rem;
 		background: var(--color-bg-light);
 		border-radius: var(--radius-full);
 		overflow: hidden;

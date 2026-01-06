@@ -188,50 +188,50 @@
 <style>
   .nowplaying {
     position: fixed;
-    right: 18px;
-    bottom: 18px;
+    right: 1.125rem;
+    bottom: 1.125rem;
     display: flex;
-    gap: 12px;
+    gap: 0.75rem;
     align-items: center;
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem;
     background: linear-gradient(90deg, rgba(29,185,84,0.08), rgba(30,144,255,0.04));
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    border: 0.0625rem solid rgba(255,255,255,0.06);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.375rem 1.25rem rgba(0,0,0,0.45);
     z-index: var(--z-modal);
     color: var(--color-text-primary);
-    width: min(420px, calc(100% - 64px));
+    width: min(26.25rem, calc(100% - 4rem));
   }
 
-  .np-left img { width:56px; height:56px; object-fit:cover; border-radius:8px; }
-  .no-art { width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:var(--color-bg-light); border-radius:8px; }
+  .np-left img { width:3.5rem; height:3.5rem; object-fit:cover; border-radius:0.5rem; }
+  .no-art { width:3.5rem; height:3.5rem; display:flex; align-items:center; justify-content:center; background:var(--color-bg-light); border-radius:0.5rem; }
 
   .np-mid { flex:1; min-width: 0; }
-  .np-title { font-weight: 700; font-size: 14px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .np-sub { color: var(--color-text-secondary); font-size:12px; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .np-title { font-weight: 700; font-size: 0.875rem; margin-bottom:0.125rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .np-sub { color: var(--color-text-secondary); font-size:0.75rem; margin-bottom:0.375rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-  .np-progress { width:100%; height:6px; background: rgba(255,255,255,0.03); border-radius:6px; overflow:hidden; }
+  .np-progress { width:100%; height:0.375rem; background: rgba(255,255,255,0.03); border-radius:0.375rem; overflow:hidden; }
   .np-progress .bar { height:100%; background: linear-gradient(90deg,var(--color-primary), var(--color-accent-blue)); width:0%; }
 
-  .np-times { display:flex; justify-content:space-between; color:var(--color-text-secondary); font-size:11px; margin-top:4px; }
+  .np-times { display:flex; justify-content:space-between; color:var(--color-text-secondary); font-size:0.6875rem; margin-top:0.25rem; }
 
-  .np-right { display:flex; gap:8px; align-items:center; }
-  .np-btn { all:unset; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:10px; cursor:pointer; background:var(--color-primary); color:var(--color-text-primary); }
+  .np-right { display:flex; gap:0.5rem; align-items:center; }
+  .np-btn { all:unset; width:2.25rem; height:2.25rem; display:flex; align-items:center; justify-content:center; border-radius:0.625rem; cursor:pointer; background:var(--color-primary); color:var(--color-text-primary); }
   .np-stop { background: #d62a42; }
 
   /* header / collapse */
-  .np-header { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
-  .np-header-left { font-size:12px; color:var(--color-text-secondary); }
-  .np-min { all:unset; cursor:pointer; padding:4px 8px; border-radius:6px; background:transparent; color:var(--color-text-secondary); }
+  .np-header { display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.5rem; }
+  .np-header-left { font-size:0.75rem; color:var(--color-text-secondary); }
+  .np-min { all:unset; cursor:pointer; padding:0.25rem 0.5rem; border-radius:0.375rem; background:transparent; color:var(--color-text-secondary); }
 
   /* collapsed state: show a compact bar */
-  .np-mid.collapsed { display:flex; gap:8px; align-items:center; }
+  .np-mid.collapsed { display:flex; gap:0.5rem; align-items:center; }
   .np-mid.collapsed .np-progress, .np-mid.collapsed .np-times { display:none; }
 
   /* volume controls */
-  .np-volume { display:flex; align-items:center; gap:8px; }
-  .mute-btn { all:unset; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:transparent; cursor:pointer; }
-  .np-volume input[type="range"] { width:96px; accent-color: var(--color-primary); }
+  .np-volume { display:flex; align-items:center; gap:0.5rem; }
+  .mute-btn { all:unset; width:2.125rem; height:2.125rem; display:flex; align-items:center; justify-content:center; border-radius:0.5rem; background:transparent; cursor:pointer; }
+  .np-volume input[type="range"] { width:6rem; accent-color: var(--color-primary); }
 
-  @media (max-width: 640px) { .nowplaying { left: 12px; right: 12px; bottom: 12px; width: auto; } }
+  @media (max-width: 40rem) { .nowplaying { left: 0.75rem; right: 0.75rem; bottom: 0.75rem; width: auto; } }
 </style>

@@ -95,8 +95,8 @@
 
 	.carousel-btn {
 		all: unset;
-		width: 36px;
-		height: 36px;
+		width: 2.25rem;
+		height: 2.25rem;
 		background: var(--color-primary);
 		color: var(--color-text-primary);
 		border-radius: var(--radius-md);
@@ -129,7 +129,7 @@
 	}
 
 	.carousel-container::-webkit-scrollbar {
-		height: 6px;
+		height: 0.375rem;
 	}
 
 	.carousel-container::-webkit-scrollbar-track {
@@ -138,13 +138,13 @@
 
 	.carousel-container::-webkit-scrollbar-thumb {
 		background: var(--color-primary);
-		border-radius: 3px;
+		border-radius: 0.1875rem;
 	}
 
 	.carousel-item {
 		all: unset;
 		flex-shrink: 0;
-		width: 160px;
+		width: 10rem;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-8);
@@ -156,14 +156,14 @@
 	}
 
 	.carousel-item:hover {
-		transform: translateY(-4px);
+		transform: translateY(-0.25rem);
 		background: rgba(29, 185, 84, 0.1);
 		border-radius: var(--radius-md);
 	}
 
 	.carousel-item:focus {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 2px;
+		outline: 0.125rem solid var(--color-primary);
+		outline-offset: 0.125rem;
 	}
 
 	.item-image {
@@ -184,7 +184,7 @@
 	}
 
 	.no-image {
-		font-size: 48px;
+		font-size: 3rem;
 	}
 
 	.item-info {
@@ -225,14 +225,14 @@
 		margin: 0;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 48rem) {
 		.carousel-item {
-			width: 140px;
+			width: 8.75rem;
 		}
 
 		.carousel-btn {
-			width: 32px;
-			height: 32px;
+			width: 2rem;
+			height: 2rem;
 		}
 	}
 </style>

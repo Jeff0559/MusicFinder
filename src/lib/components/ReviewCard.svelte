@@ -53,8 +53,8 @@
 	.review-card {
 		padding: 1rem;
 		background: #1e232a;
-		border: 1px solid #2a2f36;
-		border-radius: 10px;
+		border: 0.0625rem solid #2a2f36;
+		border-radius: 0.625rem;
 		transition: all 0.2s ease;
 	}
 
@@ -88,7 +88,7 @@
 		background: #14181f;
 		color: #8aa0b2;
 		padding: 0.25rem 0.5rem;
-		border-radius: 4px;
+		border-radius: 0.25rem;
 	}
 
 	.review-rating {
@@ -102,7 +102,7 @@
 		font-size: 0.9rem;
 		color: #ffd700;
 		letter-spacing: 0.1em;
-		min-width: 60px;
+		min-width: 3.75rem;
 	}
 
 	.date {
@@ -131,9 +131,9 @@
 		align-self: flex-start;
 		padding: 0.25rem 0.75rem;
 		background: rgba(29, 185, 84, 0.1);
-		border: 1px solid #1db954;
+		border: 0.0625rem solid #1db954;
 		color: #1db954;
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		font-size: 0.75rem;
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -144,7 +144,7 @@
 	}
 
 	.expand-btn:focus {
-		outline: 2px solid #1db954;
-		outline-offset: 2px;
+		outline: 0.125rem solid #1db954;
+		outline-offset: 0.125rem;
 	}
 </style>

@@ -110,15 +110,15 @@
 	}
 
 	.track-item.active {
-		border: 1px solid rgba(29,185,84,0.25);
-		box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-		transform: translateY(-2px);
+		border: 0.0625rem solid rgba(29,185,84,0.25);
+		box-shadow: 0 0.375rem 1rem rgba(0,0,0,0.25);
+		transform: translateY(-0.125rem);
 	}
 
 	.album-art {
 		flex-shrink: 0;
-		width: 60px;
-		height: 60px;
+		width: 3.75rem;
+		height: 3.75rem;
 		border-radius: var(--radius-md);
 		overflow: hidden;
 	}

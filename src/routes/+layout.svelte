@@ -60,6 +60,6 @@
 	/* MAIN APP WRAPPER */
 	.app {
 		min-height: 100vh;
-		padding-bottom: 80px; /* Platz für NowPlaying, falls fixiert */
+		padding-bottom: 5rem; /* Platz für NowPlaying, falls fixiert */
 	}
 </style>

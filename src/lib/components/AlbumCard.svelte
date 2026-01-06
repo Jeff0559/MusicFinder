@@ -29,28 +29,28 @@
 		flex-direction: column;
 		gap: 0.75rem;
 		cursor: pointer;
-		border-radius: 12px;
+		border-radius: 0.75rem;
 		padding: 0.5rem;
 		transition: all 0.2s ease;
 		background: #1e232a;
-		border: 1px solid #2a2f36;
+		border: 0.0625rem solid #2a2f36;
 	}
 
 	.album-card:hover {
-		transform: translateY(-4px);
+		transform: translateY(-0.25rem);
 		background: #242b33;
 		border-color: #1db954;
 	}
 
 	.album-card:focus {
-		outline: 2px solid #1db954;
-		outline-offset: 2px;
+		outline: 0.125rem solid #1db954;
+		outline-offset: 0.125rem;
 	}
 
 	.album-cover {
 		width: 100%;
 		aspect-ratio: 1;
-		border-radius: 8px;
+		border-radius: 0.5rem;
 		overflow: hidden;
 		background: #14181f;
 		display: flex;

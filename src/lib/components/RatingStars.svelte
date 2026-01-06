@@ -57,11 +57,11 @@
 
 	.star:not(:disabled):hover {
 		transform: scale(1.2);
-		filter: drop-shadow(0 0 4px var(--color-accent-yellow));
+		filter: drop-shadow(0 0 0.25rem var(--color-accent-yellow));
 	}
 
 	.star:focus {
-		outline: 2px solid var(--color-primary);
+		outline: 0.125rem solid var(--color-primary);
 		border-radius: 50%;
 	}
 
