@@ -9,24 +9,20 @@
 		}
 	}
 
-	function getStarEmoji(index: number): string {
-		if (index < rating) {
-			return '⭐';
-		}
-		return '☆';
-	}
 </script>
 
 <div class="rating-stars" class:interactive>
 	{#each Array.from({ length: maxRating }) as _, i}
 		<button
 			class="star"
-			onclick={() => handleStarClick(i + 1)}
+			class:active={i < rating}
+			on:click={() => handleStarClick(i + 1)}
 			disabled={!interactive}
 			type="button"
+			aria-pressed={i < rating}
 			title={`${i + 1} / ${maxRating} stars`}
 		>
-			{getStarEmoji(i)}
+			{i < rating ? '★' : '☆'}
 		</button>
 	{/each}
 	<span class="rating-text">{rating.toFixed(1)} / {maxRating}</span>
@@ -49,6 +45,7 @@
 		cursor: pointer;
 		transition: all var(--transition-base);
 		display: inline-block;
+		color: rgba(255, 255, 255, 0.45);
 	}
 
 	.star:disabled {
@@ -58,6 +55,11 @@
 	.star:not(:disabled):hover {
 		transform: scale(1.2);
 		filter: drop-shadow(0 0 0.25rem var(--color-accent-yellow));
+	}
+
+	.star.active {
+		color: #ffd166;
+		text-shadow: 0 0 0.5rem rgba(255, 209, 102, 0.35);
 	}
 
 	.star:focus {

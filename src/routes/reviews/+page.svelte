@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import AlbumCard from '$lib/components/AlbumCard.svelte';
 	import RatingStars from '$lib/components/RatingStars.svelte';
-	import type { SpotifyAlbum } from '$lib/types';
 
 	type StoredReview = {
 		id: string;
@@ -15,17 +14,7 @@
 		coverUrl?: string;
 	};
 
-	const albumFromReview = (review: StoredReview): SpotifyAlbum => ({
-		id: review.id,
-		name: review.album || review.trackName,
-		artists: [{ id: review.id, name: review.artist }],
-		images: (review.coverUrl || reviewCovers[review.id])
-			? [{ url: review.coverUrl || reviewCovers[review.id] }]
-			: []
-	});
-
 	let reviewedTracks: StoredReview[] = [];
-	let selectedAlbum: StoredReview | null = null;
 	let showAddReview = false;
 	let reviewCovers: Record<string, string> = {};
 
@@ -65,7 +54,6 @@
 				error = data.error;
 			}
 			reviewedTracks = Array.isArray(data.reviews) ? data.reviews : [];
-			selectedAlbum = reviewedTracks[0] ?? null;
 			await loadReviewCovers(reviewedTracks);
 		} catch (err) {
 			console.error('loadReviews failed', err);
@@ -113,15 +101,15 @@
 		};
 
 		try {
-			const trackQuery = `${review.trackName} ${review.artist}`.trim();
-			if (trackQuery) {
-				const url = await fetchTrackCover(trackQuery);
-				if (url) return url;
-			}
-
 			const albumQuery = `${review.album} ${review.artist}`.trim();
 			if (albumQuery) {
 				const url = await fetchAlbumCover(albumQuery);
+				if (url) return url;
+			}
+
+			const trackQuery = `${review.trackName} ${review.artist}`.trim();
+			if (trackQuery) {
+				const url = await fetchTrackCover(trackQuery);
 				if (url) return url;
 			}
 
@@ -165,10 +153,6 @@
 			rating: 4,
 			notes: ''
 		};
-	}
-
-	function handleViewAlbum(review: StoredReview) {
-		selectedAlbum = review;
 	}
 
 	async function submitReview(event: Event) {
@@ -231,9 +215,6 @@
 			}
 
 			reviewedTracks = reviewedTracks.filter((t) => t.id !== id);
-			if (selectedAlbum?.id === id) {
-				selectedAlbum = null;
-			}
 		} catch (err) {
 			console.error('deleteReview failed', err);
 			error = 'Review konnte nicht gelÃ¶scht werden.';
@@ -249,7 +230,7 @@
 			<h1>Your Music Reviews</h1>
 			<p>Track your favorite songs and rate your music discoveries</p>
 			<button class="add-review-btn" onclick={handleAddReview} type="button">
-				+ Add Review
+				+ Add Music Review
 			</button>
 		</div>
 	</section>
@@ -327,37 +308,6 @@
 			{/if}
 		</main>
 
-		<aside class="albums-sidebar">
-			<div class="sidebar-header">
-				<h2>Albums</h2>
-			</div>
-
-			<div class="albums-grid">
-				{#if reviewedTracks.length === 0}
-					<p class="muted">Noch keine Alben gespeichert.</p>
-				{:else}
-					{#each reviewedTracks as track (track.id)}
-						<AlbumCard
-							album={albumFromReview(track)}
-							onViewDetails={() => handleViewAlbum(track)}
-						/>
-					{/each}
-				{/if}
-			</div>
-
-			{#if selectedAlbum}
-				<div class="album-detail">
-					<h3>Review Details</h3>
-					<div class="album-info">
-						<p><strong>Track:</strong> {selectedAlbum.trackName}</p>
-						<p><strong>Artist:</strong> {selectedAlbum.artist}</p>
-						<p><strong>Album:</strong> {selectedAlbum.album || 'Single'}</p>
-						<p><strong>Bewertung:</strong> {selectedAlbum.rating.toFixed(1)} / 5</p>
-						<p><strong>Hinzugefuegt:</strong> {new Date(selectedAlbum.createdAt).toLocaleDateString('de-DE')}</p>
-					</div>
-				</div>
-			{/if}
-		</aside>
 	</div>
 
 	{#if showAddReview}
@@ -458,10 +408,11 @@
 	.reviews-header {
 		text-align: center;
 		margin-bottom: var(--space-24);
-		padding: var(--space-24) var(--space-16);
-		background: linear-gradient(135deg, rgba(29, 185, 84, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+		padding: var(--space-20) var(--space-16);
+		background: linear-gradient(135deg, rgba(20, 24, 32, 0.92), rgba(18, 22, 30, 0.78));
 		border-radius: var(--radius-lg);
-		border: 0.0625rem solid var(--color-accent-purple);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
 	}
 
 	.header-content {
@@ -469,15 +420,14 @@
 		flex-direction: column;
 		gap: var(--space-16);
 		align-items: center;
+		max-width: 32rem;
+		margin: 0 auto;
 	}
 
 	.reviews-header h1 {
 		margin: 0;
 		font-size: 1.75rem;
-		background: linear-gradient(135deg, var(--color-accent-yellow), var(--color-accent-purple));
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
+		color: var(--color-text-primary);
 	}
 
 	.reviews-header p {
@@ -488,19 +438,20 @@
 
 	.add-review-btn {
 		all: unset;
-		padding: var(--space-12) var(--space-24);
-		background: var(--color-primary);
-		color: var(--color-text-primary);
+		padding: var(--space-10) var(--space-22);
+		background: linear-gradient(135deg, var(--color-primary), #36e07b);
+		color: #0b120f;
 		border-radius: var(--radius-md);
 		font-weight: var(--font-weight-semibold);
 		cursor: pointer;
 		transition: all var(--transition-base);
+		box-shadow: 0 0.5rem 1.2rem rgba(29, 185, 84, 0.25);
 	}
 
 	.add-review-btn:hover {
-		background: var(--color-primary-dark);
-		transform: translateY(-0.125rem);
-		box-shadow: var(--shadow-lg);
+		background: linear-gradient(135deg, #1ed760, #4df18f);
+		transform: translateY(-0.125rem) scale(1.02);
+		box-shadow: 0 0.7rem 1.4rem rgba(29, 185, 84, 0.35);
 	}
 
 	.add-review-btn:focus {
@@ -511,7 +462,7 @@
 	/* Main Layout */
 	.reviews-container {
 		display: grid;
-		grid-template-columns: 1fr 18.75rem;
+		grid-template-columns: 1fr;
 		gap: var(--space-20);
 	}
 
@@ -523,14 +474,14 @@
 	}
 
 	.list-header {
-		border-bottom: 0.125rem solid var(--color-primary);
-		padding-bottom: var(--space-12);
+		border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.08);
+		padding-bottom: var(--space-8);
 	}
 
 	.list-header h2 {
 		margin: 0;
 		font-size: 1.25rem;
-		color: var(--color-primary);
+		color: var(--color-text-primary);
 	}
 
 	.error-banner {
@@ -588,15 +539,15 @@
 		flex-direction: column;
 		gap: var(--space-12);
 		padding: var(--space-16);
-		background: linear-gradient(135deg, var(--color-bg-light) 0%, var(--color-bg-medium) 100%);
+		background: rgba(20, 24, 32, 0.9);
 		border-radius: var(--radius-lg);
-		border-left: 0.1875rem solid var(--color-accent-purple);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.08);
 		transition: all var(--transition-base);
 	}
 
 	.review-card:hover {
-		transform: translateX(0.25rem);
-		box-shadow: var(--shadow-lg);
+		transform: translateY(-0.125rem);
+		box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.35);
 	}
 
 	.review-header {
@@ -631,7 +582,7 @@
 	.review-info h3 {
 		margin: 0 0 var(--space-4) 0;
 		font-size: 1rem;
-		color: var(--color-primary);
+		color: var(--color-text-primary);
 	}
 
 	.artist,
@@ -643,13 +594,14 @@
 
 	.review-rating {
 		text-align: right;
+		white-space: nowrap;
 	}
 
 	.review-notes {
 		padding: var(--space-10);
-		background: rgba(0, 0, 0, 0.2);
+		background: rgba(0, 0, 0, 0.22);
 		border-radius: var(--radius-md);
-		border-left: 0.1875rem solid var(--color-accent-blue);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.06);
 	}
 
 	.notes-label {
@@ -668,8 +620,8 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding-top: var(--space-12);
-		border-top: 0.0625rem solid rgba(255, 255, 255, 0.1);
+		padding-top: var(--space-8);
+		border-top: 0.0625rem solid rgba(255, 255, 255, 0.08);
 		font-size: var(--font-size-xs);
 		color: var(--color-text-secondary);
 	}
@@ -682,85 +634,49 @@
 	.action-btn {
 		all: unset;
 		padding: var(--space-6) var(--space-12);
-		background: transparent;
-		border: 0.0625rem solid var(--color-text-secondary);
+		background: rgba(255, 255, 255, 0.06);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.18);
 		border-radius: var(--radius-sm);
 		cursor: pointer;
 		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-semibold);
+		letter-spacing: 0.01em;
 		transition: all var(--transition-base);
 	}
 
 	.action-btn:hover {
-		border-color: var(--color-text-primary);
+		border-color: rgba(255, 255, 255, 0.35);
 		color: var(--color-text-primary);
+	}
+
+	.edit-btn {
+		background: rgba(30, 144, 255, 0.14);
+		border-color: rgba(30, 144, 255, 0.35);
+		color: #cfe4ff;
+	}
+
+	.delete-btn {
+		background: rgba(255, 107, 107, 0.16);
+		border-color: rgba(255, 107, 107, 0.4);
+		color: #ffd4d4;
 	}
 
 	.edit-btn:hover {
 		background: rgba(30, 144, 255, 0.2);
-		border-color: var(--color-accent-blue);
+		border-color: rgba(30, 144, 255, 0.6);
 	}
 
 	.delete-btn:hover {
 		background: rgba(255, 107, 107, 0.2);
-		border-color: var(--color-error);
+		border-color: rgba(255, 107, 107, 0.7);
 	}
 
-	/* Sidebar */
-	.albums-sidebar {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-20);
-	}
-
-	.sidebar-header {
-		border-bottom: 0.125rem solid var(--color-primary);
-		padding-bottom: var(--space-12);
-	}
-
-	.sidebar-header h2 {
-		margin: 0;
-		font-size: var(--font-size-xl);
-		color: var(--color-primary);
-	}
-
-	.albums-grid {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: var(--space-16);
-		max-height: 32.5rem;
-		overflow-y: auto;
-	}
-
-	.album-detail {
-		padding: var(--space-12);
-		background: var(--color-bg-light);
-		border-radius: var(--radius-lg);
-		border: 0.125rem solid var(--color-accent-blue);
-	}
-
-	.album-detail h3 {
-		margin: 0 0 var(--space-12) 0;
-		font-size: 0.875rem;
-		color: var(--color-accent-blue);
-	}
-
-	.album-info {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-8);
-	}
-
-	.album-info p {
-		margin: 0;
-		font-size: 0.75rem;
-		color: var(--color-text-secondary);
-	}
 
 	/* Modal */
 	.modal-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(5, 8, 12, 0.78);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -778,14 +694,15 @@
 	}
 
 	.modal {
-		background: var(--color-bg-light);
+		background: linear-gradient(180deg, rgba(20, 24, 32, 0.98), rgba(16, 20, 28, 0.95));
+		border: 0.0625rem solid rgba(255, 255, 255, 0.08);
 		border-radius: var(--radius-lg);
 		padding: var(--space-28);
 		max-width: 31.25rem;
 		width: 90%;
 		max-height: 90vh;
 		overflow-y: auto;
-		box-shadow: var(--shadow-2xl);
+		box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.55);
 		animation: slideUp 300ms ease-out;
 	}
 
@@ -805,26 +722,34 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: var(--space-24);
-		border-bottom: 0.125rem solid var(--color-primary);
+		border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.08);
 		padding-bottom: var(--space-12);
 	}
 
 	.modal-header h2 {
 		margin: 0;
 		font-size: var(--font-size-2xl);
-		color: var(--color-primary);
+		color: var(--color-text-primary);
 	}
 
 	.close-btn {
 		all: unset;
-		font-size: var(--font-size-xl);
+		font-size: var(--font-size-lg);
 		cursor: pointer;
 		transition: all var(--transition-base);
+		width: 2rem;
+		height: 2rem;
+		display: grid;
+		place-items: center;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.06);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.1);
 	}
 
 	.close-btn:hover {
-		transform: scale(1.2);
-		color: var(--color-error);
+		transform: scale(1.05);
+		color: #ffd4d4;
+		border-color: rgba(255, 107, 107, 0.6);
 	}
 
 	.review-form {
@@ -841,25 +766,28 @@
 
 	.form-group label {
 		font-weight: var(--font-weight-semibold);
-		color: var(--color-text-primary);
+		color: var(--color-text-secondary);
 		font-size: var(--font-size-sm);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 	}
 
 	.form-group input,
 	.form-group textarea {
 		padding: var(--space-12);
-		background: var(--color-bg-dark);
-		border: 0.125rem solid var(--color-bg-medium);
+		background: rgba(12, 16, 22, 0.85);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.12);
 		border-radius: var(--radius-md);
 		color: var(--color-text-primary);
 		font-size: var(--font-size-md);
-		transition: border-color var(--transition-base);
+		transition: border-color var(--transition-base), box-shadow var(--transition-base);
 	}
 
 	.form-group input:focus,
 	.form-group textarea:focus {
 		outline: none;
-		border-color: var(--color-primary);
+		border-color: rgba(29, 185, 84, 0.7);
+		box-shadow: 0 0 0 0.1875rem rgba(29, 185, 84, 0.18);
 	}
 
 	.form-group textarea {
@@ -869,8 +797,9 @@
 
 	.rating-input {
 		padding: var(--space-12);
-		background: var(--color-bg-dark);
+		background: rgba(12, 16, 22, 0.85);
 		border-radius: var(--radius-md);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.1);
 	}
 
 	.form-actions {
@@ -891,39 +820,30 @@
 	}
 
 	.btn-primary {
-		background: var(--color-primary);
-		color: var(--color-text-primary);
+		background: linear-gradient(135deg, var(--color-primary), #36e07b);
+		color: #0b120f;
 	}
 
 	.btn-primary:hover {
-		background: var(--color-primary-dark);
-		transform: translateY(-0.125rem);
+		background: linear-gradient(135deg, #1ed760, #4df18f);
+		transform: translateY(-0.125rem) scale(1.01);
 	}
 
 	.btn-secondary {
-		background: var(--color-bg-medium);
+		background: rgba(255, 255, 255, 0.06);
 		color: var(--color-text-primary);
-		border: 0.0625rem solid var(--color-text-secondary);
+		border: 0.0625rem solid rgba(255, 255, 255, 0.2);
 	}
 
 	.btn-secondary:hover {
-		border-color: var(--color-text-primary);
-		background: var(--color-bg-light);
+		border-color: rgba(255, 255, 255, 0.35);
+		background: rgba(255, 255, 255, 0.12);
 	}
 
 	/* Responsive */
 	@media (max-width: 64rem) {
 		.reviews-container {
 			grid-template-columns: 1fr;
-		}
-
-		.albums-sidebar {
-			order: 2;
-		}
-
-		.albums-grid {
-			grid-template-columns: repeat(auto-fit, minmax(9.375rem, 1fr));
-			max-height: auto;
 		}
 	}
 
