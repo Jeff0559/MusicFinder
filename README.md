@@ -47,10 +47,12 @@ Zu Beginn des Projekts wurden bestehende Musik-Streaming-Anwendungen analysiert,
 ### 4.2 Sketch
 In der Skizzenphase wurden mehrere Low-Fidelity-Entwürfe auf Papier erstellt, um unterschiedliche Ansätze für Aufbau und Navigation der Anwendung zu untersuchen. Die Skizzen zeigen verschiedene Start- und Detailansichten mit variierender Gewichtung von Suche, Content und Player-Elementen. Dabei wurden sowohl suchzentrierte als auch stärker inhaltsgetriebene Varianten skizziert. Die Entwürfe dienten dazu, unterschiedliche Navigationslogiken und Informationshierarchien schnell zu vergleichen und ein gemeinsames Verständnis für mögliche Lösungsansätze zu entwickeln, ohne sich frühzeitig auf ein konkretes Layout festzulegen.
 Figma: https://www.figma.com/make/u4oqLLJ5mRj8g9rGIul1pY/Dark-Theme-UI-for-Track-Finder?p=f&t=PEfHEiuUTLSUsSon-0
-Skizzen und Finale Idee/ Skizze: C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Feedback.Prototyping (1).pdf
+[Feedback Prototyping (PDF)](ScrenshotsundPDFS/Feedback.Prototyping%20(1).pdf)
+[UI Prototyping (PDF)](ScrenshotsundPDFS/UI-Prototyping%20(1).pdf)
+
 
 ### 4.3 Decide
-C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Entscheidung.png
+![Entscheidung](src/ScrenshotsundPDFS/Entscheidung.png)
 Gewählt wurde eine Variante mit einer zentral platzierten Suchfunktion auf dem Home-Screen. Die Suche ist direkt sichtbar und bildet den Einstiegspunkt der Anwendung. Ergänzt wird sie durch eine übersichtliche Startansicht, die empfohlene Inhalte anzeigt. Diese Variante wurde gewählt, da sie einen klaren Einstieg ermöglicht und sowohl gezielte Suche als auch erste Orientierung innerhalb der Anwendung unterstützt. Der Nutzungspfad beginnt auf dem Home-Screen. Von dort aus können Nutzer:innen eine Suche nach Songs, Artists oder Alben starten oder sich über die angezeigten Inhalte orientieren. Die Suche führt zu Ergebnislisten, von denen aus Detailansichten aufgerufen und weitere Interaktionen durchgeführt werden können. Der Ablauf ist linear und nachvollziehbar gestaltet. Das Referenz-Mockup zeigt den finalen Home-Screen des Prototyps mit zentraler Suchleiste, Kategorie-Auswahl für die Suche sowie einer Darstellung empfohlener Inhalte. Der Screen dient als visuelle Referenz für die gewählte Variante und ist als Screenshot im Repository dokumentiert.
 
 ### 4.4 Prototype
@@ -59,16 +61,16 @@ Die Informationsarchitektur basiert auf einer zentralen Suche, einer Ergebnisans
 Deployment URL:https://musicwizard.netlify.app/
 
 #### 4.4.1. Entwurf (Design)
-C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Start.png
+![Start](ScrenshotsundPDFS/Start.png)
 Der Prototyp ist in vier Hauptbereiche gegliedert, die über eine durchgehende Top-Navigation erreichbar sind: Start, Suche, Reviews und Vibe Matcher. Diese Struktur ist auf allen Screens konsistent sichtbar und unterstützt eine klare Trennung der Nutzungskontexte. Die Startseite dient als zentraler Einstiegspunkt und zeigt eine prominent platzierte Suchfunktion. Ergänzt wird sie durch empfohlene Inhalte, die visuell als Vinyl-Elemente dargestellt sind und eine erste Orientierung ermöglichen, ohne eine aktive Suche vorauszusetzen.
 
-C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Search .png
+![Search](ScrenshotsundPDFS/Search.png)
 Die Suchansicht fokussiert sich vollständig auf den Suchprozess. Das Suchfeld steht im Vordergrund, ergänzt durch die Auswahl zwischen Songs, Alben und Artists. Darunter sind klar abgegrenzte Bereiche für Suchergebnisse, populäre Inhalte und Vibe Matches angeordnet, die zunächst leer bleiben und erst durch Interaktion gefüllt werden. Dadurch wird deutlich, dass diese Ansicht als Arbeitsfläche für gezielte Exploration gedacht ist.
 
-C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Review.png
+![Review](ScrenshotsundPDFS/Review.png)
 Die Review-Ansicht fungiert als persönlicher Bereich, in dem bereits bewertete Songs angezeigt werden. Die Screenshots zeigen eine listenartige Darstellung mit Cover, Titel, Artist, Bewertung in Form von Sternen sowie persönlichen Notizen. Aktionen wie Bearbeiten oder Löschen sind direkt bei den einzelnen Einträgen platziert und klar erkennbar.
 
-C:\MusicFinder\musicfinder\src\ScrenshotsundPDFS\Vibe matcher.png
+![Vibe Matcher](ScrenshotsundPDFS/VibeMatcher.png)
 Der Vibe Matcher ist als eigenständiger Screen umgesetzt, der sich visuell von den übrigen Ansichten abhebt. Nutzer:innen können hier über Slider konkrete Werte für Energy, Valence, Danceability und Tempo einstellen. Zusätzlich sind Presets und ein Genre-Seed sichtbar, die den Einstieg erleichtern. Die empfohlenen Tracks werden in einem separaten Bereich unterhalb der Steuerung angezeigt und entstehen erst nach aktiver Interaktion.
 
 
