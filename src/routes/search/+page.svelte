@@ -557,6 +557,7 @@
     youtubeId = null;
     youtubeTitle = getTitle(item);
     errorMsg = '';
+    recordRecent(item);
 
     const artist = item?.artists?.[0]?.name ?? '';
     const query = [getTitle(item), artist, 'official audio'].filter(Boolean).join(' ');
@@ -566,8 +567,6 @@
       youtubeId = yt?.videoId ?? null;
       if (!youtubeId) {
         errorMsg = 'Kein YouTube-Video gefunden.';
-      } else {
-        recordRecent(item);
       }
     } catch (e) {
       console.error('YouTube lookup failed', e);
