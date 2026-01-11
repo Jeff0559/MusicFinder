@@ -47,6 +47,7 @@ Zu Beginn des Projekts wurden bestehende Musik-Streaming-Anwendungen analysiert,
 ### 4.2 Sketch
 In der Skizzenphase wurden mehrere Low-Fidelity-Entwürfe auf Papier erstellt, um unterschiedliche Ansätze für Aufbau und Navigation der Anwendung zu untersuchen. Die Skizzen zeigen verschiedene Start- und Detailansichten mit variierender Gewichtung von Suche, Content und Player-Elementen. Dabei wurden sowohl suchzentrierte als auch stärker inhaltsgetriebene Varianten skizziert. Die Entwürfe dienten dazu, unterschiedliche Navigationslogiken und Informationshierarchien schnell zu vergleichen und ein gemeinsames Verständnis für mögliche Lösungsansätze zu entwickeln, ohne sich frühzeitig auf ein konkretes Layout festzulegen.
 Figma: https://www.figma.com/make/u4oqLLJ5mRj8g9rGIul1pY/Dark-Theme-UI-for-Track-Finder?p=f&t=PEfHEiuUTLSUsSon-0
+Skizzen und Finale Idee/ Skizze: C:\MusicFinder\musicfinder\scripts\Feedback.Prototyping (1).pdf
 
 ### 4.3 Decide
 Gewählt wurde eine Variante mit einer zentral platzierten Suchfunktion auf dem Home-Screen. Die Suche ist direkt sichtbar und bildet den Einstiegspunkt der Anwendung. Ergänzt wird sie durch eine übersichtliche Startansicht, die empfohlene Inhalte anzeigt. Diese Variante wurde gewählt, da sie einen klaren Einstieg ermöglicht und sowohl gezielte Suche als auch erste Orientierung innerhalb der Anwendung unterstützt. Der Nutzungspfad beginnt auf dem Home-Screen. Von dort aus können Nutzer:innen eine Suche nach Songs, Artists oder Alben starten oder sich über die angezeigten Inhalte orientieren. Die Suche führt zu Ergebnislisten, von denen aus Detailansichten aufgerufen und weitere Interaktionen durchgeführt werden können. Der Ablauf ist linear und nachvollziehbar gestaltet. Das Referenz-Mockup zeigt den finalen Home-Screen des Prototyps mit zentraler Suchleiste, Kategorie-Auswahl für die Suche sowie einer Darstellung empfohlener Inhalte. Der Screen dient als visuelle Referenz für die gewählte Variante und ist als Screenshot im Repository dokumentiert.
@@ -57,8 +58,20 @@ Die Informationsarchitektur basiert auf einer zentralen Suche, einer Ergebnisans
 Deployment URL:https://musicwizard.netlify.app/
 
 #### 4.4.1. Entwurf (Design)
-Der Prototyp ist in vier Hauptbereiche gegliedert, die über eine Top-Navigation erreichbar sind. Die Startseite dient als zentraler Einstieg mit Suchfunktion, während Suche, Vibe-Matcher und Reviews jeweils klar abgegrenzte Nutzungskontexte abbilden. Die Oberflächen sind reduziert gestaltet und unterstützen gezielte Suche, stimmungsbasierte Exploration und das Erfassen persönlicher Bewertungen. Ein integrierter Preview-Player ermöglicht das Abspielen von Musik, ohne den aktuellen Kontext zu verlassen. Gestalterisch liegt der Fokus auf guter Lesbarkeit, klarer Hierarchie und hervorgehobenen Primäraktionen, wobei ein dunkles UI und dezente Animationen die Inhalte unterstützen, ohne abzulenken.
 
+Der Prototyp ist in vier Hauptbereiche gegliedert, die über eine durchgehende Top-Navigation erreichbar sind: Start, Suche, Reviews und Vibe Matcher. Diese Struktur ist auf allen Screens konsistent sichtbar und unterstützt eine klare Trennung der Nutzungskontexte. Die Startseite dient als zentraler Einstiegspunkt und zeigt eine prominent platzierte Suchfunktion. Ergänzt wird sie durch empfohlene Inhalte, die visuell als Vinyl-Elemente dargestellt sind und eine erste Orientierung ermöglichen, ohne eine aktive Suche vorauszusetzen.
+
+
+Die Suchansicht fokussiert sich vollständig auf den Suchprozess. Das Suchfeld steht im Vordergrund, ergänzt durch die Auswahl zwischen Songs, Alben und Artists. Darunter sind klar abgegrenzte Bereiche für Suchergebnisse, populäre Inhalte und Vibe Matches angeordnet, die zunächst leer bleiben und erst durch Interaktion gefüllt werden. Dadurch wird deutlich, dass diese Ansicht als Arbeitsfläche für gezielte Exploration gedacht ist.
+
+
+Die Review-Ansicht fungiert als persönlicher Bereich, in dem bereits bewertete Songs angezeigt werden. Die Screenshots zeigen eine listenartige Darstellung mit Cover, Titel, Artist, Bewertung in Form von Sternen sowie persönlichen Notizen. Aktionen wie Bearbeiten oder Löschen sind direkt bei den einzelnen Einträgen platziert und klar erkennbar.
+
+
+Der Vibe Matcher ist als eigenständiger Screen umgesetzt, der sich visuell von den übrigen Ansichten abhebt. Nutzer:innen können hier über Slider konkrete Werte für Energy, Valence, Danceability und Tempo einstellen. Zusätzlich sind Presets und ein Genre-Seed sichtbar, die den Einstieg erleichtern. Die empfohlenen Tracks werden in einem separaten Bereich unterhalb der Steuerung angezeigt und entstehen erst nach aktiver Interaktion.
+
+
+Gestalterisch sind alle Screens durch ein dunkles Farbschema, klare Typografie und panelbasierte Layouts verbunden. Primäre Aktionen wie „Search“, „Match Vibe“ oder „Add Music Review“ sind farblich hervorgehoben und eindeutig als nächste Handlung erkennbar. Hintergrundillustrationen und dezente Animationen sind vorhanden, treten jedoch visuell zurück und beeinträchtigen weder Lesbarkeit noch Orientierung.
 #### 4.4.2. Umsetzung (Technik)
 Der Prototyp wurde mit SvelteKit unter Verwendung von HTML, CSS und JavaScript umgesetzt. Als Entwicklungsumgebung diente Visual Studio Code, die Versionsverwaltung erfolgte über Git und GitHub. Der Einsatz von KI-Tools wird separat in der KI-Deklaration beschrieben.
 
@@ -89,6 +102,6 @@ Die folgende Deklaration ist verpflichtend und beschreibt den Einsatz von KI im 
 Im Projekt kamen ChatGPT und GitHub Copilot zum Einsatz. KI wurde zur Unterstützung bei der Strukturierung der Dokumentation, bei Code-Vorschlägen, Refactoring, Debugging sowie bei der Formulierung von UX-Texten verwendet. Teile der Texte und einzelne Code-Snippets wurden durch KI vorgeschlagen, jedoch stets geprüft, angepasst und in den Gesamtkontext integriert. Konzeption, Designentscheidungen, technische Umsetzung und finale Überarbeitung liegen vollständig in eigener Verantwortung. Der Einsatz von KI beschleunigte den Arbeitsprozess, erforderte jedoch kontinuierliche Kontrolle, um Qualität und inhaltliches Verständnis sicherzustellen.
 
 ## 8. Anhang [Optional]
-Beispiele:
-- **Testskript & Materialien:** _[Link/Datei]_  
-- **Rohdaten/Auswertung:** _[Link/Datei]_  
+Skizzen und Finale Idee/ Skizze: C:\MusicFinder\musicfinder\scripts\Feedback.Prototyping (1).pdf
+Figgma Prompt und Auswerung:C:\MusicFinder\musicfinder\scripts\UI-Prototyping (1).pdf
+erste Schritte der Maske:C:\MusicFinder\musicfinder\scripts\Entscheidung.png

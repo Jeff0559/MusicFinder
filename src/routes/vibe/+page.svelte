@@ -689,7 +689,7 @@
     display: grid;
     grid-template-columns: 2fr 1.1fr;
     gap: 1.5rem;
-    background: linear-gradient(135deg, rgba(61, 224, 116, 0.14), rgba(50, 181, 255, 0.08));
+    background: linear-gradient(135deg, rgba(17, 22, 32, 0.92), rgba(22, 30, 41, 0.9));
     border: 0.0625rem solid #1e262f;
     border-radius: 1rem;
     padding: 1.375rem;
