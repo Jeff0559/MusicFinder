@@ -46,6 +46,8 @@ Zu Beginn des Projekts wurden bestehende Musik-Streaming-Anwendungen analysiert,
 
 ### 4.2 Sketch
 In der Skizzenphase wurden mehrere Low-Fidelity-Entwürfe auf Papier erstellt, um unterschiedliche Ansätze für Aufbau und Navigation der Anwendung zu untersuchen. Die Skizzen zeigen verschiedene Start- und Detailansichten mit variierender Gewichtung von Suche, Content und Player-Elementen. Dabei wurden sowohl suchzentrierte als auch stärker inhaltsgetriebene Varianten skizziert. Die Entwürfe dienten dazu, unterschiedliche Navigationslogiken und Informationshierarchien schnell zu vergleichen und ein gemeinsames Verständnis für mögliche Lösungsansätze zu entwickeln, ohne sich frühzeitig auf ein konkretes Layout festzulegen.
+Figma: https://www.figma.com/make/u4oqLLJ5mRj8g9rGIul1pY/Dark-Theme-UI-for-Track-Finder?p=f&t=PEfHEiuUTLSUsSon-0
+
 ### 4.3 Decide
 Gewählt wurde eine Variante mit einer zentral platzierten Suchfunktion auf dem Home-Screen. Die Suche ist direkt sichtbar und bildet den Einstiegspunkt der Anwendung. Ergänzt wird sie durch eine übersichtliche Startansicht, die empfohlene Inhalte anzeigt. Diese Variante wurde gewählt, da sie einen klaren Einstieg ermöglicht und sowohl gezielte Suche als auch erste Orientierung innerhalb der Anwendung unterstützt. Der Nutzungspfad beginnt auf dem Home-Screen. Von dort aus können Nutzer:innen eine Suche nach Songs, Artists oder Alben starten oder sich über die angezeigten Inhalte orientieren. Die Suche führt zu Ergebnislisten, von denen aus Detailansichten aufgerufen und weitere Interaktionen durchgeführt werden können. Der Ablauf ist linear und nachvollziehbar gestaltet. Das Referenz-Mockup zeigt den finalen Home-Screen des Prototyps mit zentraler Suchleiste, Kategorie-Auswahl für die Suche sowie einer Darstellung empfohlener Inhalte. Der Screen dient als visuelle Referenz für die gewählte Variante und ist als Screenshot im Repository dokumentiert.
 
@@ -63,11 +65,6 @@ Der Prototyp wurde mit SvelteKit unter Verwendung von HTML, CSS und JavaScript u
 Die Anwendung ist seitenbasiert aufgebaut und nutzt das Routing von SvelteKit zur Trennung der zentralen Bereiche. Wiederverwendbare Komponenten werden für Suche, Ergebnislisten, Reviews und Player-Interaktionen eingesetzt. Zentrale UI-Bausteine sind unter anderem Bewertungselemente, ein Now-Playing-Bereich für Audio-Previews sowie eine Vibe-Bar zur Visualisierung der Mood-Parameter. Der State ist bewusst einfach gehalten.
 
 Die Datenbasis ist prototypisch umgesetzt und arbeitet mit vereinfachten Datenstrukturen. Für die Musikwiedergabe werden Audio-Previews genutzt, ergänzt durch einen YouTube-Fallback. Auf Full-Streaming und komplexe Empfehlungssysteme wurde bewusst verzichtet, um den Fokus auf Interaktion, Verständlichkeit und Nutzungserlebnis zu legen.
-- **Technologie‑Stack:** _[SvelteKit, Bibliotheken falls genutzt]_
-- **Tooling:** _[IDE/Erweiterungen, lokale/Cloud‑Tools; den Einsatz von KI beschreiben Sie im Kapitel **KI-Deklaration**]_  
-- **Struktur & Komponenten:** _[Seiten, Routen, State/Stores, wichtige Komponenten]_
-- **Daten & Schnittstellen [Optional]:** _[Datenquellen, API‑Entwürfe, Modelle]_
-- **Besondere Entscheidungen:** _[z. B. Trade‑offs, Vereinfachungen]_  
 
 ### 4.5 Validate
 - **URL der getesteten Version** (separat deployt)
@@ -76,6 +73,7 @@ Die Evaluation des Prototyps wurde anhand einer separat deployten Version durchg
 Die Tests wurden unmoderiert durchgeführt. Insgesamt nahmen drei musikinteressierte Personen aus dem Studienumfeld teil, die die Anwendung erstmals nutzten. Die Testpersonen erhielten Aufgaben wie das freie Erkunden der Anwendung, das gezielte Suchen nach einem Artist, das Anhören von Musik sowie das Erfassen eines Reviews. Die Aufgaben konnten grundsätzlich erfolgreich durchgeführt werden. Der Zusammenhang zwischen Artist, Album und Song wurde verstanden, gleichzeitig war der aktuelle Nutzungskontext nicht immer eindeutig erkennbar. Zudem wurde aufgenommen, dass Reviews nicht nur für Alben, sondern auch für einzelne Songs beziehungsweise Singles sinnvoll sind.
 
 Zusammenfassend zeigte die Evaluation, dass der durchgängige Flow der Anwendung logisch und verständlich ist. Auf Basis des Feedbacks wurden die Review-Funktion auf Singles erweitert sowie Navigation und Filteroptionen verbessert, um die Orientierung und Bedienbarkeit insgesamt zu erhöhen.
+
 ## 5. Erweiterungen [Optional]
 Über den geforderten Mindestumfang hinaus wurde der Prototyp um zusätzliche Funktionen erweitert, die den explorativen Charakter der Anwendung stärken. Dazu gehört insbesondere der Vibe-Matcher, der es ermöglicht, Musik stimmungsbasiert zu entdecken, sowie ein Session-Modus zur zusammenhängenden Wiedergabe ausgewählter Songs. Diese Erweiterungen erweitern die Anwendung über eine reine Suchoberfläche hinaus und unterstützen ein freieres, exploratives Nutzungserlebnis. Die Umsetzung erfolgte bewusst prototypisch. Der Vibe-Matcher nutzt vereinfachte Parameter wie Energy, Valence, Danceability und Tempo, wodurch die vorgeschlagenen Songs teilweise wiederkehrend sind. Diese Einschränkung wurde in Kauf genommen, um den Fokus auf Interaktion, Flow und Verständlichkeit zu legen. Der Session-Modus basiert auf bestehender Player-Logik und verzichtet auf komplexe Personalisierung.
 
