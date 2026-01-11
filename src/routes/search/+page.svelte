@@ -437,10 +437,13 @@
     return hydrated;
   }
 
-  function handlePreview(item: any) {
+  function handlePreview(item: any, isSession = false) {
     const previewUrl = getPreviewUrl(item);
 
     if (!previewUrl) {
+      if (!isSession) {
+        stopAlbumSessionPlayback();
+      }
       playYouTube(item);
       return;
     }
@@ -448,6 +451,11 @@
     if (currentPreviewUrl === previewUrl && isPlaying) {
       stopPreview();
       return;
+    }
+
+    if (!isSession) {
+      stopAlbumSessionPlayback();
+      stopYouTube();
     }
 
     const genreTag = getGenreTag(item);
@@ -537,6 +545,7 @@
   }
 
   async function playYouTube(item: any) {
+    stopAlbumSessionPlayback();
     ytLoading = true;
     youtubeId = null;
     youtubeTitle = getTitle(item);
@@ -589,6 +598,7 @@
 
   function startAlbumSession(tracks: any[]) {
     if (!tracks.length) return;
+    stopYouTube();
     albumSessionQueue = tracks;
     albumSessionIndex = 0;
     playAlbumSessionCurrent();
@@ -603,6 +613,12 @@
     stopYouTube();
   }
 
+  function stopAlbumSessionPlayback() {
+    albumSessionYouTubeId = null;
+    albumSessionYouTubeTitle = '';
+    stopPreview();
+  }
+
   function playAlbumSessionCurrent() {
     const track = albumSessionQueue[albumSessionIndex];
     if (!track) return;
@@ -610,7 +626,7 @@
     if (previewUrl) {
       albumSessionYouTubeId = null;
       albumSessionYouTubeTitle = '';
-      handlePreview(track);
+      handlePreview(track, true);
       return;
     }
     playAlbumSessionYouTube(track);
@@ -623,6 +639,7 @@
   }
 
   async function playAlbumSessionYouTube(track: any) {
+    stopYouTube();
     albumSessionYouTubeTitle = getTitle(track);
     albumSessionYouTubeId = null;
     const artist = track?.artists?.[0]?.name ?? '';
@@ -918,7 +935,7 @@
           {#if albumTracksLoading} <span class="count">Loading...</span> {/if}
         </div>
         {#if albumTracks.length}
-          <button class="btn secondary" onclick={() => startAlbumSession(albumTracks)}>
+          <button class="btn primary is-match" onclick={() => startAlbumSession(albumTracks)}>
             Album Session starten
           </button>
         {/if}
