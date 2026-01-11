@@ -73,12 +73,13 @@ Der Vibe Matcher ist als eigenständiger Screen umgesetzt, der sich visuell von 
 
 
 Gestalterisch sind alle Screens durch ein dunkles Farbschema, klare Typografie und panelbasierte Layouts verbunden. Primäre Aktionen wie „Search“, „Match Vibe“ oder „Add Music Review“ sind farblich hervorgehoben und eindeutig als nächste Handlung erkennbar. Hintergrundillustrationen und dezente Animationen sind vorhanden, treten jedoch visuell zurück und beeinträchtigen weder Lesbarkeit noch Orientierung.
+
 #### 4.4.2. Umsetzung (Technik)
 Der Prototyp wurde mit SvelteKit unter Verwendung von HTML, CSS und JavaScript umgesetzt. Als Entwicklungsumgebung diente Visual Studio Code, die Versionsverwaltung erfolgte über Git und GitHub. Der Einsatz von KI-Tools wird separat in der KI-Deklaration beschrieben.
 
 Die Anwendung ist seitenbasiert aufgebaut und nutzt das Routing von SvelteKit zur Trennung der zentralen Bereiche. Wiederverwendbare Komponenten werden für Suche, Ergebnislisten, Reviews und Player-Interaktionen eingesetzt. Zentrale UI-Bausteine sind unter anderem Bewertungselemente, ein Now-Playing-Bereich für Audio-Previews sowie eine Vibe-Bar zur Visualisierung der Mood-Parameter. Der State ist bewusst einfach gehalten.
 
-Die Datenbasis ist prototypisch umgesetzt und arbeitet mit vereinfachten Datenstrukturen. Für die Musikwiedergabe werden Audio-Previews genutzt, ergänzt durch einen YouTube-Fallback. Auf Full-Streaming und komplexe Empfehlungssysteme wurde bewusst verzichtet, um den Fokus auf Interaktion, Verständlichkeit und Nutzungserlebnis zu legen.
+Die Datenbasis ist prototypisch umgesetzt und nutzt die Spotify Web API zur Suche nach Songs, Artists und Alben sowie zur Bereitstellung von Audio-Previews. Für die Musikwiedergabe werden Spotify-Previews verwendet, ergänzt durch einen YouTube-Fallback, falls kein Preview verfügbar ist. Reviews werden in einer MongoDB-Datenbank gespeichert, um Bewertungen und persönliche Notizen persistent abzulegen. Auf Full-Streaming und komplexe Empfehlungssysteme wurde bewusst verzichtet, um den Fokus auf Interaktion, Verständlichkeit und Nutzungserlebnis zu legen.
 
 ### 4.5 Validate
 Getestete Version: https://69429d4259e223344d683a8c--musicwizard.netlify.app/
