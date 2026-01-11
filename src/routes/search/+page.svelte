@@ -437,6 +437,13 @@
     return hydrated;
   }
 
+  function recordRecent(item: any) {
+    const title = getTitle(item);
+    if (title) {
+      recent.add(title);
+    }
+  }
+
   function handlePreview(item: any, isSession = false) {
     const previewUrl = getPreviewUrl(item);
 
@@ -464,7 +471,6 @@
         ? genrePixelMap[genreTag]
         : getImage(item) || null;
 
-    recent.add(getTitle(item));
     startPreview(previewUrl, {
       id: item?.id ?? item?.uri,
       name: getTitle(item),
@@ -473,6 +479,7 @@
         .filter(Boolean),
       albumImage
     });
+    recordRecent(item);
   }
 
   async function scoreAndRecommend(item: any) {
@@ -550,7 +557,6 @@
     youtubeId = null;
     youtubeTitle = getTitle(item);
     errorMsg = '';
-    recent.add(getTitle(item));
 
     const artist = item?.artists?.[0]?.name ?? '';
     const query = [getTitle(item), artist, 'official audio'].filter(Boolean).join(' ');
@@ -560,6 +566,8 @@
       youtubeId = yt?.videoId ?? null;
       if (!youtubeId) {
         errorMsg = 'Kein YouTube-Video gefunden.';
+      } else {
+        recordRecent(item);
       }
     } catch (e) {
       console.error('YouTube lookup failed', e);
