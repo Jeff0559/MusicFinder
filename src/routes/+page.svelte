@@ -134,7 +134,7 @@
   }
 
   $: {
-    const nextKey = recentTerms.slice(-MAX_VINYL_TERMS).join('|');
+    const nextKey = recentTerms.slice(0, MAX_VINYL_TERMS).join('|');
     if (!nextKey) {
       recentKey = '';
       vinylItems = [];
@@ -155,7 +155,7 @@
   }
 
   async function loadVinylImages() {
-    const recentSlice = uniqueTerms(recentTerms.slice(-MAX_VINYL_TERMS));
+    const recentSlice = uniqueTerms(recentTerms.slice(0, MAX_VINYL_TERMS));
     if (!recentSlice.length) {
       vinylItems = [];
       return;
