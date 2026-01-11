@@ -97,7 +97,6 @@ Zusammenfassend zeigte die Evaluation, dass der durchgängige Flow der Anwendung
 Im Ausblick zeigt sich insbesondere beim Vibe-Matcher weiteres Potenzial. In einer weiterentwickelten Version sollten Empfehlungen dynamisch auf Basis konkreter Song-Scores erfolgen, um abwechslungsreichere und präzisere Vorschläge zu ermöglichen. Diese Weiterentwicklung wurde bewusst nicht umgesetzt, da der Fokus des Projekts auf der Evaluation des Nutzungserlebnisses lag.Im Vergleich zum Mindestumfang stellen diese Funktionen optionale Erweiterungen dar, die nicht erforderlich sind, um die grundlegenden Workflows zu erfüllen, jedoch die konzeptionelle Tiefe und Qualität des Prototyps erhöhen.
 
 ## 6. Projektorganisation [Optional]
-Beispiele:
 Das Projekt wird in einem GitHub-Repository verwaltet, das eine klare Trennung von Seiten und Komponenten aufweist. Commits wurden klein und nachvollziehbar gehalten, um Änderungen transparent zu dokumentieren.
 
 ## 7. KI‑Deklaration
