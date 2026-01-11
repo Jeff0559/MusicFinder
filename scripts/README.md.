@@ -67,7 +67,7 @@ Die Anwendung ist seitenbasiert aufgebaut und nutzt das Routing von SvelteKit zu
 Die Datenbasis ist prototypisch umgesetzt und arbeitet mit vereinfachten Datenstrukturen. Für die Musikwiedergabe werden Audio-Previews genutzt, ergänzt durch einen YouTube-Fallback. Auf Full-Streaming und komplexe Empfehlungssysteme wurde bewusst verzichtet, um den Fokus auf Interaktion, Verständlichkeit und Nutzungserlebnis zu legen.
 
 ### 4.5 Validate
-- **URL der getesteten Version** (separat deployt)
+Getestete Version: https://69429d4259e223344d683a8c--musicwizard.netlify.app/
 Die Evaluation des Prototyps wurde anhand einer separat deployten Version durchgeführt. Ziel der Prüfung war es zu überprüfen, ob der Such- und Explorations-Workflow verständlich ist, ob Nutzer:innen sich jederzeit orientieren können und ob zentrale Funktionen wie Musik entdecken, Reviews erfassen sowie der Wechsel zwischen Inhalten ohne Anleitung möglich sind.
 
 Die Tests wurden unmoderiert durchgeführt. Insgesamt nahmen drei musikinteressierte Personen aus dem Studienumfeld teil, die die Anwendung erstmals nutzten. Die Testpersonen erhielten Aufgaben wie das freie Erkunden der Anwendung, das gezielte Suchen nach einem Artist, das Anhören von Musik sowie das Erfassen eines Reviews. Die Aufgaben konnten grundsätzlich erfolgreich durchgeführt werden. Der Zusammenhang zwischen Artist, Album und Song wurde verstanden, gleichzeitig war der aktuelle Nutzungskontext nicht immer eindeutig erkennbar. Zudem wurde aufgenommen, dass Reviews nicht nur für Alben, sondern auch für einzelne Songs beziehungsweise Singles sinnvoll sind.
