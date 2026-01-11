@@ -77,6 +77,7 @@
   };
 
   const unsub = recent.subscribe((value) => (recentTerms = value));
+
   onDestroy(() => {
     unsub();
     if (searchDebounce) {
@@ -271,7 +272,7 @@
     --text-primary: #f4f6f9;
     --text-secondary: #b8c0cc;
     --text-muted: #7b8594;
-    --ring: rgba(56, 224, 127, 0.35);
+    --ring: rgba(255, 255, 255, 0.22);
     --shadow-soft: 0 1.125rem 2.5rem rgba(3, 8, 16, 0.6);
     --shadow-card: 0 0.75rem 1.875rem rgba(2, 6, 13, 0.5);
     --space-xs: 0.25rem;
@@ -286,34 +287,39 @@
     --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
   }
 
-  :global(body){
+  :global(html[data-page="home"]){
+    background: url('/bg-home.gif?v=2') center/cover no-repeat fixed;
+  }
+
+  :global(body[data-page="home"]){
     margin:0;
     font-family: var(--font-sans);
-    background-color: var(--bg-main);
+    background-color: transparent;
     min-height: 100vh;
     color: var(--text-primary);
     position: relative;
   }
-  :global(body)::before{
+  :global(body[data-page="home"])::before{
     content:'';
     position: fixed;
-    inset: -10%;
+    inset: 0;
     background: url('/bg-home.gif?v=2') center/cover no-repeat;
-    transform: scale(0.85);
+    transform: scale(1);
     transform-origin: center;
     z-index: -2;
     pointer-events: none;
   }
-  :global(body)::after{
+  :global(body[data-page="home"])::after{
     content:'';
     position: fixed;
     inset: 0;
-    background-image:
-      linear-gradient(180deg, rgba(10, 12, 16, 0.5), rgba(10, 12, 16, 0.72)),
-      radial-gradient(75rem 25rem at 50% -10%, rgba(76, 201, 240, 0.18), transparent 60%),
-      radial-gradient(56.25rem 37.5rem at 10% 10%, rgba(56, 224, 127, 0.12), transparent 55%);
+    background: transparent;
     z-index: -1;
     pointer-events: none;
+  }
+  :global(body[data-page="home"] .app){
+    min-height: 100vh;
+    background: transparent;
   }
   :global(*){
     box-sizing: border-box;
@@ -390,17 +396,17 @@
     display:flex;
     width:100%;
     max-width:45rem;
-    background: linear-gradient(135deg, rgba(32, 40, 50, 0.95), rgba(18, 22, 28, 0.95));
+    background: linear-gradient(135deg, rgba(20, 24, 32, 0.92), rgba(18, 22, 30, 0.78));
     padding:var(--space-s);
     border-radius: var(--radius-m);
-    border:0.0625rem solid rgba(255,255,255,0.14);
-    box-shadow: var(--shadow-soft);
+    border:0.0625rem solid rgba(255,255,255,0.1);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
     gap: var(--space-s);
     transition: border 140ms ease, box-shadow 140ms ease;
   }
   .searchbox:focus-within{
     border:0.0625rem solid var(--ring);
-    box-shadow:0 0 0 0.1875rem rgba(56, 224, 127, 0.12), var(--shadow-soft);
+    box-shadow:0 0 0 0.125rem rgba(255, 255, 255, 0.12), var(--shadow-soft);
   }
   .searchbox input{
     flex:1;

@@ -660,28 +660,20 @@
 </main>
 
 <style>
-  :global(body) {
-    background-color: #0c0f14;
+  :global(html[data-page="vibe"]) {
+    background: url('/bg-vibe.gif?v=2') center/cover no-repeat fixed;
+  }
+
+  :global(body[data-page="vibe"]) {
+    background: url('/bg-vibe.gif?v=2') center/cover no-repeat fixed;
+    background-color: transparent;
     min-height: 100vh;
-    position: relative;
+    margin: 0;
   }
-  :global(body)::before {
-    content: '';
-    position: fixed;
-    inset: -10%;
-    background: url('/bg-vibe.gif?v=2') center/cover no-repeat;
-    transform: scale(0.85);
-    transform-origin: center;
-    z-index: -2;
-    pointer-events: none;
-  }
-  :global(body)::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(10, 12, 16, 0.52), rgba(10, 12, 16, 0.74));
-    z-index: -1;
-    pointer-events: none;
+
+  :global(body[data-page="vibe"] .app) {
+    min-height: 100vh;
+    background: transparent;
   }
 
   .page {

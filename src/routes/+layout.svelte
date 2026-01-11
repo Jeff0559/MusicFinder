@@ -1,4 +1,6 @@
 <script>
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	// Globale Design-Tokens (Farben, Fonts, Spacing usw.)
 	import '$lib/styles/tokens.css';
 
@@ -8,6 +10,24 @@
 
 	// Favicon
 	import favicon from '$lib/assets/favicon.svg';
+
+	const mapPathToPage = (pathname) => {
+		if (!pathname || pathname === '/') return 'home';
+		return pathname.split('/').filter(Boolean)[0] ?? 'home';
+	};
+
+	onMount(() => {
+		const unsubscribe = page.subscribe(($page) => {
+			const key = mapPathToPage($page.url.pathname);
+			document.body.dataset.page = key;
+			document.documentElement.dataset.page = key;
+		});
+		return () => {
+			unsubscribe();
+			delete document.body.dataset.page;
+			delete document.documentElement.dataset.page;
+		};
+	});
 </script>
 
 <svelte:head>
@@ -40,6 +60,10 @@
 		color: var(--color-text-primary);
 		font-family: var(--font-family-base);
 		line-height: var(--line-height-normal);
+	}
+
+	:global(html[data-page], body[data-page]) {
+		background-color: transparent;
 	}
 
 	/* GLOBAL LINKS */

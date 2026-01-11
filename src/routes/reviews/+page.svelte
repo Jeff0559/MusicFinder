@@ -374,28 +374,20 @@
 </div>
 
 <style>
-	:global(body) {
-		background-color: #0f1218;
+	:global(html[data-page="reviews"]) {
+		background: url('/lofi.gif?v=1') center/cover no-repeat fixed;
+	}
+
+	:global(body[data-page="reviews"]) {
+		background: url('/lofi.gif?v=1') center/cover no-repeat fixed;
+		background-color: transparent;
 		min-height: 100vh;
-		position: relative;
+		margin: 0;
 	}
-	:global(body)::before {
-		content: '';
-		position: fixed;
-		inset: -10%;
-		background: url('/bg-reviews.gif?v=2') center/cover no-repeat;
-		transform: scale(0.85);
-		transform-origin: center;
-		z-index: -2;
-		pointer-events: none;
-	}
-	:global(body)::after {
-		content: '';
-		position: fixed;
-		inset: 0;
-		background: linear-gradient(180deg, rgba(8, 10, 14, 0.52), rgba(8, 10, 14, 0.74));
-		z-index: -1;
-		pointer-events: none;
+
+	:global(body[data-page="reviews"] .app) {
+		min-height: 100vh;
+		background: transparent;
 	}
 
 	.container {

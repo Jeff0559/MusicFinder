@@ -5,15 +5,6 @@
   import { recent } from '$lib/stores/recent';
   import { vibeScores } from '$lib/stores/vibeScores';
 
-  const curatedPlaylists = [
-    { title: 'Grunge Revolution', subtitle: '90s alt energy', color: '#66BB6A' },
-    { title: 'Sounds of the 90s', subtitle: 'Nostalgic anthems', color: '#FFA726' },
-    { title: 'Darkness & Rebellion', subtitle: 'Moody guitars', color: '#AB47BC' },
-    { title: 'Cult Rock Albums', subtitle: 'Iconic records', color: '#42A5F5' },
-    { title: 'Emotional Dark Mix', subtitle: 'Slow burn vibes', color: '#EF5350' },
-    { title: 'Late Night Drive', subtitle: 'Cinematic', color: '#26C6DA' }
-  ];
-
   const youtubeSearchUrl = (query: string) =>
     `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
@@ -555,12 +546,6 @@
     youtubeTitle = '';
   }
 
-  function handlePlaylistClick(title: string) {
-    searchType = 'track';
-    searchQuery = title;
-    handleSearch();
-  }
-
   async function loadAlbumTracks(album: any) {
     if (!album?.id) return;
     albumTracksLoading = true;
@@ -858,11 +843,17 @@
                 <div class="track-sub">{getSubtitle(track)}</div>
               </div>
               <div class="track-actions">
-                <button class="btn primary is-play" onclick={() => handlePreview(track)}>
-                  {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
-                </button>
-                <a class="btn secondary is-open" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Details</a>
-              </div>
+              <button class="btn primary is-play" onclick={() => handlePreview(track)}>
+                {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
+              </button>
+              <button
+                class="btn secondary is-match"
+                onclick={() => scoreAndRecommend(track)}
+                disabled={scoreLoadingId === track.id}
+              >
+                {scoreLoadingId === track.id ? 'Scoring...' : 'Vibe Matcher'}
+              </button>
+            </div>
             </div>
           {/each}
         </div>
@@ -928,16 +919,16 @@
               <div class="track-main">
                 <div class="track-title">{track.name}</div>
                 <div class="track-sub">{track.artists?.[0]?.name ?? ''}</div>
-              </div>
-              <div class="track-actions">
                 {#if matchReview(track)}
-                  <div class="review-chip small">
+                  <div class="review-chip small track-review">
                     <span>Review {matchReview(track)?.rating?.toFixed?.(1) ?? ''}/5</span>
                     {#if matchReview(track)?.notes}
                       <span class="review-note">{matchReview(track)?.notes}</span>
                     {/if}
                   </div>
                 {/if}
+              </div>
+              <div class="track-actions">
               <button class="btn primary is-play" onclick={() => handlePreview(track)}>
                 {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
@@ -1066,36 +1057,31 @@
       <div class="vibe-grid">
         {#each vibeMatches.slice(0, 8) as match (match.id ?? match.uri ?? match.name)}
           <div class="vibe-card">
-            <div class="vibe-main">
-              <div class="vibe-title">{getTitle(match)}</div>
-              <div class="vibe-sub">{getSubtitle(match)}</div>
+            <div class="vibe-top">
+              <div class="vibe-cover">
+                <img src={getImage(match) || '/fallback-cover.svg'} alt={getTitle(match)} />
+              </div>
+              <div class="vibe-main">
+                <div class="vibe-title">{getTitle(match)}</div>
+                <div class="vibe-sub">{getSubtitle(match)}</div>
+              </div>
             </div>
             <div class="vibe-actions">
               <button class="btn primary is-play" onclick={() => handlePreview(match)}>
                 {getPreviewUrl(match) ? (currentPreviewUrl === getPreviewUrl(match) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              <a class="btn secondary is-open" href={getExternalUrl(match) ?? '#'} target="_blank" rel="noreferrer">
-                Details
-              </a>
+              <button
+                class="btn secondary is-match"
+                onclick={() => scoreAndRecommend(match)}
+                disabled={scoreLoadingId === match.id}
+              >
+                {scoreLoadingId === match.id ? 'Scoring...' : 'Vibe Matcher'}
+              </button>
             </div>
           </div>
         {/each}
       </div>
     {/if}
-  </section>
-
-  <section class="panel">
-    <div class="panel-header">
-      <h2>In playlists</h2>
-    </div>
-    <div class="playlist-grid">
-      {#each curatedPlaylists as pl}
-        <button class="playlist-card" style={`background:${pl.color}`} onclick={() => handlePlaylistClick(pl.title)} type="button">
-          <div class="playlist-title">{pl.title}</div>
-          <div class="playlist-sub">{pl.subtitle}</div>
-        </button>
-      {/each}
-    </div>
   </section>
 
   {#if youtubeId}
@@ -1118,29 +1104,21 @@
 </main>
 
 <style>
-  :global(body) {
-    background-color: #101217;
+  :global(html[data-page="search"]) {
+    background: url('/bg-search.gif?v=2') center/cover no-repeat fixed;
+  }
+
+  :global(body[data-page="search"]) {
+    background: url('/bg-search.gif?v=2') center/cover no-repeat fixed;
+    background-color: transparent;
     min-height: 100vh;
     color: #ffffff;
-    position: relative;
+    margin: 0;
   }
-  :global(body)::before {
-    content: '';
-    position: fixed;
-    inset: -10%;
-    background: url('/bg-search.gif?v=2') center/cover no-repeat;
-    transform: scale(0.85);
-    transform-origin: center;
-    z-index: -2;
-    pointer-events: none;
-  }
-  :global(body)::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(10, 12, 16, 0.52), rgba(10, 12, 16, 0.74));
-    z-index: -1;
-    pointer-events: none;
+
+  :global(body[data-page="search"] .app) {
+    min-height: 100vh;
+    background: transparent;
   }
 
   .page {
@@ -1161,10 +1139,6 @@
     flex-direction: column;
     gap: 0.625rem;
     box-shadow: 0 0.75rem 2rem rgba(0,0,0,0.4);
-    position: sticky;
-    top: 4.25rem;
-    z-index: 5;
-    backdrop-filter: blur(0.375rem);
   }
 
   .search-row {
@@ -1254,11 +1228,6 @@
   .btn.is-match:hover {
     transform: translateY(-0.0625rem) scale(1.02);
     box-shadow: 0 1rem 1.875rem rgba(0, 230, 118, 0.45), 0 0 0 0.0625rem rgba(66, 165, 245, 0.45);
-  }
-  .btn.is-open::before {
-    content: 'i';
-    display: inline-block;
-    margin-right: 0.375rem;
   }
   .btn.primary {
     background: linear-gradient(135deg, #00e676, #42a5f5);
@@ -1599,46 +1568,6 @@
     flex-wrap: wrap;
   }
 
-  .playlist-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
-    gap: 0.75rem;
-  }
-
-  .playlist-card {
-    border-radius: 1rem;
-    padding: 0.875rem;
-    color: #0f0f0f;
-    min-height: 6.25rem;
-    box-shadow: 0 0.5rem 1.375rem rgba(0,0,0,0.35);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 0.25rem;
-    border: none;
-    cursor: pointer;
-    transition: transform 120ms ease, box-shadow 120ms ease;
-  }
-
-  .playlist-title {
-    font-weight: 800;
-  }
-
-  .playlist-sub {
-    font-size: 0.875rem;
-    color: rgba(0,0,0,0.8);
-  }
-
-  .playlist-card:focus-visible {
-    outline: 0.125rem solid #fff;
-    outline-offset: 0.125rem;
-  }
-
-  .playlist-card:hover {
-    transform: translateY(-0.125rem);
-    box-shadow: 0 0.75rem 1.625rem rgba(0,0,0,0.45);
-  }
-
   .vibe-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -1653,6 +1582,28 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .vibe-top {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+  }
+
+  .vibe-cover {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 0.0625rem solid #2c2c2c;
+  }
+
+  .vibe-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .vibe-title {
@@ -1750,6 +1701,13 @@
   .review-chip.small {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
+  }
+
+  .track-review {
+    margin-top: 0.35rem;
+    background: #1f1f1f;
+    border-color: #2b2b2b;
+    color: #d6d6d6;
   }
 
   .review-note {

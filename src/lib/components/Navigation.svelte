@@ -7,14 +7,14 @@
 <nav class="navbar">
   <div class="navbar-container">
     <div class="navbar-brand">
-      <span class="brand-logo">dYZa</span>
+      <img class="brand-gif" src="/lofi.gif" alt="MusicFinder" />
       <span class="brand-name">MusicFinder</span>
     </div>
 
     <ul class="navbar-menu">
       <li><a href="/" aria-current={isActive('/') ? 'page' : undefined}>Start</a></li>
       <li><a href="/search" aria-current={isActive('/search') ? 'page' : undefined}>Suche</a></li>
-      <li><a href="/reviews" aria-current={isActive('/reviews') ? 'page' : undefined}>Reviews & Alben</a></li>
+      <li><a href="/reviews" aria-current={isActive('/reviews') ? 'page' : undefined}>Review</a></li>
       <li><a href="/vibe" aria-current={isActive('/vibe') ? 'page' : undefined}>Vibe Matcher</a></li>
     </ul>
   </div>
@@ -47,6 +47,15 @@
     font-size: 1.125rem;
     color: #f1ae48;
     letter-spacing: 0.02em;
+  }
+
+  .brand-gif {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
+    border: 0.0625rem solid rgba(241, 174, 72, 0.6);
   }
 
   .navbar-menu {
