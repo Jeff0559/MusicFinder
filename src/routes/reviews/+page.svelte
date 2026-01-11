@@ -164,14 +164,16 @@
 			return;
 		}
 
+		const payload = { ...newReview };
 		saving = true;
 		error = '';
+		handleCloseReview();
 
 		try {
 			const resp = await fetch('/api/user-reviews', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(newReview)
+				body: JSON.stringify(payload)
 			});
 
 			if (!resp.ok) {
@@ -185,7 +187,6 @@
 			}
 			if (data?.review) {
 				reviewedTracks = [data.review, ...reviewedTracks];
-				selectedAlbum = data.review;
 				await loadReviewCovers([data.review]);
 			}
 			handleCloseReview();
@@ -766,20 +767,27 @@
 
 	.form-group input,
 	.form-group textarea {
-		padding: var(--space-12);
-		background: rgba(12, 16, 22, 0.85);
-		border: 0.0625rem solid rgba(255, 255, 255, 0.12);
+		padding: var(--space-12) var(--space-16);
+		background: rgba(10, 14, 20, 0.96);
+		border: 0.125rem solid rgba(255, 255, 255, 0.14);
 		border-radius: var(--radius-md);
 		color: var(--color-text-primary);
 		font-size: var(--font-size-md);
-		transition: border-color var(--transition-base), box-shadow var(--transition-base);
+		box-shadow: inset 0 0 0 0.0625rem rgba(0, 0, 0, 0.45);
+		transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
 	}
 
 	.form-group input:focus,
 	.form-group textarea:focus {
 		outline: none;
-		border-color: rgba(29, 185, 84, 0.7);
-		box-shadow: 0 0 0 0.1875rem rgba(29, 185, 84, 0.18);
+		border-color: rgba(29, 185, 84, 0.9);
+		box-shadow: 0 0 0 0.25rem rgba(29, 185, 84, 0.22);
+		background: rgba(10, 14, 20, 0.98);
+	}
+
+	.form-group input:hover,
+	.form-group textarea:hover {
+		border-color: rgba(255, 255, 255, 0.2);
 	}
 
 	.form-group textarea {

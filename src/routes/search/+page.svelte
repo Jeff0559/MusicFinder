@@ -136,6 +136,7 @@
   let isPlaying = $state(false);
   let scoreLoadingId: string | null = $state(null);
   let vibeMatches: any[] = $state([]);
+  let vibeSeeds: any[] = $state([]);
   let artistTopTracks: any[] = $state([]);
   let artistTopLoading = $state(false);
   let artistTopError = $state('');
@@ -160,6 +161,24 @@
     const a = normalize((item?.artists ?? item?.album?.artists ?? [])[0]?.name ?? '');
     const id = item?.id ?? item?.uri ?? '';
     return `${t}|${a}|${id}`;
+  };
+
+  const uniqueByKey = (list: any[]) => {
+    const seen = new Set<string>();
+    const output: any[] = [];
+    for (const item of list) {
+      const key = resultKey(item);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      output.push(item);
+    }
+    return output;
+  };
+
+  const removeVibeMatch = (item: any) => {
+    const key = resultKey(item);
+    vibeMatches = vibeMatches.filter((match) => resultKey(match) !== key);
+    vibeSeeds = vibeSeeds.filter((seed) => resultKey(seed) !== key);
   };
 
   const heroTrack = $derived(results?.[0] ?? null);
@@ -215,6 +234,7 @@
     stopPreview();
     stopYouTube();
     vibeMatches = [];
+    vibeSeeds = [];
     lastScore = null;
     artistTopTracks = [];
     artistTopError = '';
@@ -501,10 +521,9 @@
       const matches = hydrated.length
         ? hydrated.slice(0, 10).map((base) => ({ ...base }))
         : [];
-      const withSelected = [item, ...matches].filter(Boolean);
-      vibeMatches = Array.from(
-        new Map(withSelected.map((match) => [resultKey(match), match])).values()
-      ).slice(0, 10);
+      vibeSeeds = uniqueByKey([item, ...vibeSeeds]).slice(0, 10);
+      const withSelected = uniqueByKey([...vibeSeeds, ...matches].filter(Boolean));
+      vibeMatches = withSelected.slice(0, 20);
       if (!matches.length) {
         errorMsg = 'Keine Vibe-Matches gefunden. Probiere einen anderen Song.';
       }
@@ -807,7 +826,7 @@
               {scoreLoadingId === heroTrack?.id ? 'Scoring...' : 'Match Vibe'}
             </button>
           {:else if searchType === 'album'}
-            <button class="btn secondary" onclick={() => loadAlbumTracks(heroTrack)}>
+            <button class="btn primary is-match" onclick={() => loadAlbumTracks(heroTrack)}>
               Album-Titel anzeigen
             </button>
           {:else}
@@ -932,7 +951,13 @@
               <button class="btn primary is-play" onclick={() => handlePreview(track)}>
                 {getPreviewUrl(track) ? (currentPreviewUrl === getPreviewUrl(track) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-                <a class="btn secondary is-open" href={getExternalUrl(track) ?? '#'} target="_blank" rel="noreferrer">Details</a>
+              <button
+                class="btn secondary is-match"
+                onclick={() => scoreAndRecommend(track)}
+                disabled={scoreLoadingId === track.id}
+              >
+                {scoreLoadingId === track.id ? 'Scoring...' : 'Vibe Matcher'}
+              </button>
               </div>
             </div>
           {/each}
@@ -1000,7 +1025,7 @@
   <section class="panel">
     <div class="panel-header">
       <div class="panel-title">
-        <h2>Popular songs</h2>
+        <h2>{searchType === 'album' ? 'Albums' : 'Popular songs'}</h2>
         {#if results.length} <span class="count">{results.length}</span> {/if}
       </div>
     </div>
@@ -1020,15 +1045,9 @@
               <button class="btn primary is-play" onclick={() => handlePreview(item)}>
                 {getPreviewUrl(item) ? (currentPreviewUrl === getPreviewUrl(item) && isPlaying ? 'Pause' : 'Play') : 'YouTube'}
               </button>
-              {#if searchType === 'album'}
-                <button class="btn secondary" onclick={() => loadAlbumTracks(item)}>
-                  Tracks
-                </button>
-              {:else}
-                <button class="btn primary is-match" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id || !isTrack(item)}>
-                  {isTrack(item)
-                    ? (scoreLoadingId === item.id ? 'Scoring...' : 'Match Vibe')
-                    : 'Nur Songs'}
+              {#if isTrack(item)}
+                <button class="btn primary is-match" onclick={() => scoreAndRecommend(item)} disabled={scoreLoadingId === item.id}>
+                  {scoreLoadingId === item.id ? 'Scoring...' : 'Vibe Matcher'}
                 </button>
               {/if}
             </div>
@@ -1076,6 +1095,9 @@
                 disabled={scoreLoadingId === match.id}
               >
                 {scoreLoadingId === match.id ? 'Scoring...' : 'Vibe Matcher'}
+              </button>
+              <button class="btn secondary is-remove" onclick={() => removeVibeMatch(match)}>
+                Entfernen
               </button>
             </div>
           </div>
@@ -1620,6 +1642,16 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  .btn.is-remove {
+    border-color: rgba(255, 107, 107, 0.35);
+    color: #ffb3b3;
+  }
+
+  .btn.is-remove:hover {
+    border-color: rgba(255, 107, 107, 0.6);
+    color: #ffd2d2;
   }
 
   .score-chip {
