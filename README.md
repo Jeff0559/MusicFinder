@@ -58,7 +58,7 @@ Gewählt wurde eine Variante mit einer zentral platzierten Suchfunktion auf dem 
 ### 4.4 Prototype
 Die Informationsarchitektur basiert auf einer zentralen Suche, einer Ergebnisansicht sowie Detailansichten für Artists und Alben. Die Oberflächen sind bewusst reduziert gestaltet. Grosse Lesbarkeit, klare visuelle Hierarchie und eine begrenzte Farbpalette stehen im Vordergrund. Sekundäre Informationen werden visuell zurückgenommen, um den Fokus auf Titel, Artists und zentrale Interaktionen wie Play, Match und Review zu lenken. Cards und Panels sind ruhig gehalten, damit neue Inhalte schnell erfasst werden können.
 
-Deployment URL:https://musicwizard.netlify.app/
+Deployment URL:[(https://silver-melba-dd071f.netlify.app/)](https://silver-melba-dd071f.netlify.app/)
 
 #### 4.4.1. Entwurf (Design)
 ![Start](ScrenshotsundPDFS/Start.png)
